@@ -1,0 +1,258 @@
+import React, { useState, useEffect } from 'react';
+import { Telegram, CommunicationLog } from '../types/telegram';
+import { VirtualizedTelegramList } from './VirtualizedTelegramList';
+import { TelegramDetail } from './TelegramDetail';
+import { parseTelegramsXML } from '../utils/xmlParser';
+import '../types/electron';
+import './TelegramViewer.css';
+
+export const TelegramViewer: React.FC = () => {
+  const [communicationLog, setCommunicationLog] = useState<CommunicationLog | null>(null);
+  const [selectedTelegram, setSelectedTelegram] = useState<Telegram | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [currentFile, setCurrentFile] = useState<string | null>(null);
+  const [parseProgress, setParseProgress] = useState<{
+    progress: number;
+    processed: number;
+    total: number;
+  } | null>(null);
+  const [searchFilter, setSearchFilter] = useState<string>('');
+
+  // Remove auto-loading of sample data
+
+  const loadSampleData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Load the sample XML file
+      const response = await fetch('/samples/telegrams.xml');
+      if (!response.ok) {
+        throw new Error(`Failed to load telegrams: ${response.status}`);
+      }
+      
+      const xmlContent = await response.text();
+      await loadFromXMLContent(xmlContent);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load telegrams');
+      console.error('Error loading telegrams:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectTelegram = (telegram: Telegram) => {
+    setSelectedTelegram(telegram);
+  };
+
+  // Filter telegrams based on search
+  const filteredTelegrams = React.useMemo(() => {
+    if (!communicationLog || !searchFilter.trim()) {
+      return communicationLog?.telegrams || [];
+    }
+
+    const filter = searchFilter.toLowerCase();
+    return communicationLog.telegrams.filter(telegram => 
+      telegram.service.toLowerCase().includes(filter) ||
+      telegram.connectionName.toLowerCase().includes(filter) ||
+      telegram.rawData.toLowerCase().includes(filter) ||
+      telegram.timestamp.includes(filter)
+    );
+  }, [communicationLog, searchFilter]);
+
+  const handleRefresh = () => {
+    if (currentFile) {
+      // If we have a loaded file, reload it
+      loadFromFile();
+    } else {
+      // No file loaded, prompt to open one
+      handleOpenFile();
+    }
+  };
+
+  const loadFromXMLContent = async (xmlContent: string, filePath?: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      setParseProgress(null);
+      
+      const data = await parseTelegramsXML(xmlContent, (progress, processed, total) => {
+        setParseProgress({ progress, processed, total });
+      });
+      
+      setCommunicationLog(data);
+      setCurrentFile(filePath || null);
+      
+      // Auto-select the first telegram if available
+      if (data.telegrams.length > 0) {
+        setSelectedTelegram(data.telegrams[0]);
+      } else {
+        setSelectedTelegram(null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to parse XML');
+      console.error('Error parsing XML:', err);
+    } finally {
+      setLoading(false);
+      setParseProgress(null);
+    }
+  };
+
+  const handleOpenFile = async () => {
+    if (!window.electronAPI) {
+      setError('File dialog not available. This feature requires the Electron environment.');
+      return;
+    }
+
+    try {
+      const result = await window.electronAPI.openFile();
+      
+      if (result.success && result.content) {
+        await loadFromXMLContent(result.content, result.filePath);
+      } else {
+        if (result.error && result.error !== 'No file selected') {
+          setError(result.error);
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to open file');
+      console.error('Error opening file:', err);
+    }
+  };
+
+  const loadFromFile = async () => {
+    // This would re-read the current file if we stored the path
+    // For now, just prompt to open a new file
+    handleOpenFile();
+  };
+
+  const handleClearData = () => {
+    setCommunicationLog(null);
+    setSelectedTelegram(null);
+    setCurrentFile(null);
+    setSearchFilter('');
+    setError(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="telegram-viewer">
+        <div className="telegram-viewer-loading">
+          <h2>Loading telegrams...</h2>
+          {parseProgress ? (
+            <div className="loading-progress">
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${parseProgress.progress}%` }}
+                />
+              </div>
+              <div className="progress-text">
+                Processing {parseProgress.processed.toLocaleString()} of {parseProgress.total.toLocaleString()} telegrams 
+                ({parseProgress.progress.toFixed(1)}%)
+              </div>
+            </div>
+          ) : (
+            <div className="loading-spinner"></div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="telegram-viewer">
+        <div className="telegram-viewer-error">
+          <h2>Error Loading Telegrams</h2>
+          <p>{error}</p>
+          <button onClick={handleRefresh} className="retry-button">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!communicationLog) {
+    return (
+      <div className="telegram-viewer">
+        <div className="telegram-viewer-header">
+          <div className="header-info">
+            <h1>Telegram Viewer</h1>
+          </div>
+          <div className="header-actions">
+            <button onClick={handleOpenFile} className="open-file-button">
+              Open File
+            </button>
+          </div>
+        </div>
+        <div className="telegram-viewer-empty">
+          <h2>No Telegram File Loaded</h2>
+          <p>Click "Open File" to load an XML telegram file and start viewing communications.</p>
+          <button onClick={handleOpenFile} className="open-file-button large">
+            Open XML File
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="telegram-viewer">
+      <div className="telegram-viewer-header">
+        <div className="header-info">
+          <h1>Telegram Viewer</h1>
+          <div className="file-info">
+            {currentFile && (
+              <span className="current-file">File: {currentFile.split(/[/\\]/).pop()}</span>
+            )}
+          </div>
+          <div className="connection-info">
+            <span className="connection-name">{communicationLog.recordStart.connectionName}</span>
+            <span className="connection-mode">{communicationLog.recordStart.mode}</span>
+            <span className="connection-host">{communicationLog.recordStart.host}</span>
+          </div>
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Search telegrams..."
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="search-input"
+            />
+            {searchFilter && (
+              <button 
+                onClick={() => setSearchFilter('')}
+                className="clear-search-button"
+                title="Clear search"
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="header-actions">
+          <button onClick={handleOpenFile} className="open-file-button">
+            Open File
+          </button>
+          <button onClick={handleRefresh} className="refresh-button">
+            Refresh
+          </button>
+          <button onClick={handleClearData} className="clear-button">
+            Clear
+          </button>
+        </div>
+      </div>
+      <div className="telegram-viewer-content">
+        <VirtualizedTelegramList
+          telegrams={filteredTelegrams}
+          selectedTelegram={selectedTelegram}
+          onSelectTelegram={handleSelectTelegram}
+        />
+        <TelegramDetail telegram={selectedTelegram} />
+      </div>
+    </div>
+  );
+};

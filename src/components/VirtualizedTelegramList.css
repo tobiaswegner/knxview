@@ -1,0 +1,138 @@
+.virtualized-telegram-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+  overflow: hidden;
+}
+
+.telegram-list-header {
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #ffffff;
+  flex-shrink: 0;
+}
+
+.telegram-list-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.telegram-list-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #f9f9f9;
+}
+
+.telegram-list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.telegram-list-container::-webkit-scrollbar-track {
+  background: #f9f9f9;
+}
+
+.telegram-list-container::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.telegram-list-container::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+.telegram-list-spacer {
+  width: 100%;
+}
+
+.telegram-list-visible-items {
+  width: 100%;
+}
+
+.telegram-item {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin: 4px 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.telegram-item:hover {
+  background-color: #f0f8ff;
+  border-color: #4a90e2;
+}
+
+.telegram-item.selected {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
+.telegram-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.telegram-timestamp {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.telegram-service {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.telegram-index {
+  background-color: #f5f5f5;
+  color: #666;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: monospace;
+}
+
+.telegram-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.telegram-connection {
+  color: #666;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.telegram-raw-data {
+  font-family: 'Courier New', monospace;
+  color: #444;
+  font-size: 11px;
+  background-color: #f5f5f5;
+  padding: 4px 6px;
+  border-radius: 4px;
+  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

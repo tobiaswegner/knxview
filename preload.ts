@@ -1,5 +1,12 @@
-import { contextBridge } from 'electron';
+const { contextBridge, ipcRenderer } = require('electron');
+
+interface FileResult {
+  success: boolean;
+  filePath?: string;
+  content?: string;
+  error?: string;
+}
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  // Add any APIs you want to expose to the renderer process
+  openFile: (): Promise<FileResult> => ipcRenderer.invoke('dialog:openFile')
 });
