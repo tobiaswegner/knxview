@@ -120,6 +120,11 @@ export const VirtualizedTelegramList: React.FC<VirtualizedTelegramListProps> = (
                   </div>
                   <div className="telegram-item-body">
                     <span className="telegram-connection">{telegram.connectionName}</span>
+                    {telegram.sourceAddress && telegram.destinationAddress && (
+                      <span className="telegram-addresses">
+                        {telegram.sourceAddress} → {telegram.destinationAddress}
+                      </span>
+                    )}
                     <span className="telegram-raw-data">{truncateRawData(telegram.rawData)}</span>
                   </div>
                 </div>

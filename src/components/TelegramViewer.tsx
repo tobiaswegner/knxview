@@ -57,7 +57,11 @@ export const TelegramViewer: React.FC = () => {
       telegram.service.toLowerCase().includes(filter) ||
       telegram.connectionName.toLowerCase().includes(filter) ||
       telegram.rawData.toLowerCase().includes(filter) ||
-      telegram.timestamp.includes(filter)
+      telegram.timestamp.includes(filter) ||
+      (telegram.payloadType && telegram.payloadType.toLowerCase().includes(filter)) ||
+      (telegram.sourceAddress && telegram.sourceAddress.toLowerCase().includes(filter)) ||
+      (telegram.destinationAddress && telegram.destinationAddress.toLowerCase().includes(filter)) ||
+      (telegram.payload && telegram.payload.toLowerCase().includes(filter))
     );
   }, [communicationLog, searchFilter]);
 

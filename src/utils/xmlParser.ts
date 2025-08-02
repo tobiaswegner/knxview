@@ -1,4 +1,5 @@
 import { Telegram, CommunicationLog } from '../types/telegram';
+import { parseFrameFormat } from './commonEmiParser';
 
 export const parseTelegramsXML = async (
   xmlContent: string, 
@@ -32,14 +33,19 @@ export const parseTelegramsXML = async (
     
     // Process chunk
     const chunkElements = Array.from(telegramElements).slice(i, chunkEnd);
-    const chunkTelegrams = chunkElements.map((element, chunkIndex) => ({
-      id: `telegram-${i + chunkIndex + 1}`,
-      timestamp: element.getAttribute('Timestamp') || '',
-      connectionName: element.getAttribute('ConnectionName') || '',
-      service: element.getAttribute('Service') || '',
-      frameFormat: element.getAttribute('FrameFormat') || '',
-      rawData: element.getAttribute('RawData') || '',
-    }));
+    const chunkTelegrams = chunkElements.map((element, chunkIndex) => {
+      const baseTelegram: Telegram = {
+        id: `telegram-${i + chunkIndex + 1}`,
+        timestamp: element.getAttribute('Timestamp') || '',
+        connectionName: element.getAttribute('ConnectionName') || '',
+        service: element.getAttribute('Service') || '',
+        frameFormat: element.getAttribute('FrameFormat') || '',
+        rawData: element.getAttribute('RawData') || '',
+      };
+      
+      // Parse frame format (CommonEmi, etc.)
+      return parseFrameFormat(baseTelegram);
+    });
     
     telegrams.push(...chunkTelegrams);
     

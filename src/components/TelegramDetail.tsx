@@ -76,6 +76,81 @@ export const TelegramDetail: React.FC<TelegramDetailProps> = ({ telegram }) => {
           </div>
         </div>
 
+        {/* KNX CommonEmi Data Section */}
+        {telegram.frameFormat === 'CommonEmi' && !telegram.parseError && (
+          <div className="detail-section">
+            <h3>KNX CommonEmi Data</h3>
+            <div className="detail-group">
+              {telegram.sourceAddress && (
+                <div className="detail-item">
+                  <label>Source Address:</label>
+                  <span className="knx-address">{telegram.sourceAddress}</span>
+                </div>
+              )}
+              {telegram.destinationAddress && (
+                <div className="detail-item">
+                  <label>Destination Address:</label>
+                  <span className="knx-address">{telegram.destinationAddress}</span>
+                </div>
+              )}
+              {telegram.payloadType && (
+                <div className="detail-item">
+                  <label>Payload Type:</label>
+                  <span className="payload-type">{telegram.payloadType}</span>
+                </div>
+              )}
+              {telegram.payload && (
+                <div className="detail-item">
+                  <label>Payload:</label>
+                  <span className="monospace payload-data">{telegram.payload}</span>
+                </div>
+              )}
+              <div className="detail-item">
+                <label>Format:</label>
+                <span className="format-type">
+                  {telegram.isExtendedFormat ? 'Extended' : 'Standard'} CommonEmi
+                </span>
+              </div>
+              {telegram.controlByte1 && (
+                <div className="detail-item">
+                  <label>Control Byte 1:</label>
+                  <span className="monospace control-byte">{telegram.controlByte1}</span>
+                </div>
+              )}
+              {telegram.controlByte2 && (
+                <div className="detail-item">
+                  <label>Control Byte 2:</label>
+                  <span className="monospace control-byte">{telegram.controlByte2}</span>
+                </div>
+              )}
+              {telegram.transportLayerControl && (
+                <div className="detail-item">
+                  <label>Transport Layer Control:</label>
+                  <span className="monospace transport-control">{telegram.transportLayerControl}</span>
+                </div>
+              )}
+              {telegram.apci && (
+                <div className="detail-item">
+                  <label>APCI:</label>
+                  <span className="monospace apci-value">{telegram.apci}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Parse Error Section */}
+        {telegram.parseError && (
+          <div className="detail-section error-section">
+            <h3>Parse Error</h3>
+            <div className="detail-group">
+              <div className="error-message">
+                {telegram.parseError}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="detail-section">
           <h3>Raw Data</h3>
           <div className="raw-data-container">
