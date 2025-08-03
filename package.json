@@ -1,19 +1,24 @@
 {
-  "name": "workspace",
+  "name": "knxview",
   "version": "1.0.0",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc && webpack --mode=production",
     "build-electron": "tsc main.ts --outDir dist && tsc preload.ts --outDir dist",
     "build-react": "webpack --mode=production",
+    "build-all": "npm run build-electron && npm run build-react",
     "dev": "concurrently \"npm run dev-react\" \"npm run dev-electron\"",
     "dev-react": "webpack serve --mode=development",
     "dev-electron": "npm run build-electron && NODE_ENV=development electron . --no-sandbox --disable-gpu",
     "start": "electron . --no-sandbox --disable-gpu",
+    "package": "npm run build-all && electron-builder",
+    "package-all": "npm run build-all && electron-builder --publish=never",
+    "dist": "npm run build-all && electron-builder --publish=always",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Tobias Wegner <git@tobiaswegner.de>",
+  "homepage": "https://www.tobiaswegner.de",
   "license": "ISC",
   "description": "",
   "devDependencies": {
@@ -23,6 +28,7 @@
     "copy-webpack-plugin": "^13.0.0",
     "css-loader": "^7.1.2",
     "electron": "^37.2.5",
+    "electron-builder": "^26.0.19",
     "html-webpack-plugin": "^5.6.3",
     "style-loader": "^4.0.0",
     "ts-loader": "^9.5.2",
@@ -34,5 +40,61 @@
   "dependencies": {
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
+  },
+  "build": {
+    "appId": "de.tobiaswegner.knxview",
+    "productName": "knxview",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "public/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Development"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
