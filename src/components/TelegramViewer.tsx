@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Telegram, CommunicationLog } from '../types/telegram';
 import { VirtualizedTelegramList } from './VirtualizedTelegramList';
 import { TelegramDetail } from './TelegramDetail';
+import { InterfaceSelector } from './InterfaceSelector';
 import { parseTelegramsXML } from '../utils/xmlParser';
+import { KNXInterface } from '../types/electron';
 import '../types/electron';
 import './TelegramViewer.css';
 
@@ -18,6 +20,66 @@ export const TelegramViewer: React.FC = () => {
     total: number;
   } | null>(null);
   const [searchFilter, setSearchFilter] = useState<string>('');
+  
+  // Interface selector state
+  const [showInterfaceSelector, setShowInterfaceSelector] = useState(false);
+  const [knxInterfaces, setKnxInterfaces] = useState<KNXInterface[]>([]);
+  const [isDiscovering, setIsDiscovering] = useState(false);
+  const [interfaceError, setInterfaceError] = useState<string | null>(null);
+  const [selectedInterface, setSelectedInterface] = useState<KNXInterface | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [liveTelegrams, setLiveTelegrams] = useState<Telegram[]>([]);
+
+  // Set up KNX event listeners
+  useEffect(() => {
+    if (!window.electronAPI) return;
+
+    const handleKNXTelegram = (telegram: any) => {
+      console.log('Frontend received KNX telegram:', telegram);
+      
+      const newTelegram: Telegram = {
+        ...telegram,
+        // Ensure we have an ID if not provided
+        id: telegram.id || `live-${Date.now()}-${Math.random()}`
+      };
+      
+      console.log('Adding telegram to live telegrams:', newTelegram);
+      setLiveTelegrams(prev => {
+        const updated = [newTelegram, ...prev].slice(0, 10000);
+        console.log('Live telegrams count:', updated.length);
+        return updated;
+      });
+    };
+
+    const handleKNXConnected = (data: any) => {
+      console.log('KNX connection established:', data);
+      setIsConnected(true);
+      setIsConnecting(false);
+      setError(null);
+    };
+
+    const handleKNXDisconnected = () => {
+      setIsConnected(false);
+      setIsConnecting(false);
+      setSelectedInterface(null);
+    };
+
+    const handleKNXError = (error: any) => {
+      setInterfaceError(error.error);
+      setIsConnecting(false);
+      setIsConnected(false);
+    };
+
+    window.electronAPI.onKNXTelegram(handleKNXTelegram);
+    window.electronAPI.onKNXConnected(handleKNXConnected);
+    window.electronAPI.onKNXDisconnected(handleKNXDisconnected);
+    window.electronAPI.onKNXError(handleKNXError);
+
+    return () => {
+      window.electronAPI.removeKNXListeners();
+    };
+  }, []);
 
   // Remove auto-loading of sample data
 
@@ -46,14 +108,16 @@ export const TelegramViewer: React.FC = () => {
     setSelectedTelegram(telegram);
   };
 
-  // Filter telegrams based on search
+  // Filter telegrams based on search - combine file telegrams and live telegrams
   const filteredTelegrams = React.useMemo(() => {
-    if (!communicationLog || !searchFilter.trim()) {
-      return communicationLog?.telegrams || [];
+    const allTelegrams = isConnected ? liveTelegrams : (communicationLog?.telegrams || []);
+    
+    if (!searchFilter.trim()) {
+      return allTelegrams;
     }
 
     const filter = searchFilter.toLowerCase();
-    return communicationLog.telegrams.filter(telegram => 
+    return allTelegrams.filter(telegram => 
       telegram.service.toLowerCase().includes(filter) ||
       telegram.connectionName.toLowerCase().includes(filter) ||
       telegram.rawData.toLowerCase().includes(filter) ||
@@ -63,7 +127,7 @@ export const TelegramViewer: React.FC = () => {
       (telegram.destinationAddress && telegram.destinationAddress.toLowerCase().includes(filter)) ||
       (telegram.payload && telegram.payload.toLowerCase().includes(filter))
     );
-  }, [communicationLog, searchFilter]);
+  }, [communicationLog, liveTelegrams, searchFilter, isConnected]);
 
   const handleRefresh = () => {
     if (currentFile) {
@@ -139,6 +203,92 @@ export const TelegramViewer: React.FC = () => {
     setError(null);
   };
 
+  const handleOpenInterfaceSelector = () => {
+    setShowInterfaceSelector(true);
+    setInterfaceError(null);
+  };
+
+  const handleDiscoverInterfaces = async () => {
+    if (!window.electronAPI) {
+      setInterfaceError('KNX discovery not available. This feature requires the Electron environment.');
+      return;
+    }
+
+    setIsDiscovering(true);
+    setInterfaceError(null);
+    
+    try {
+      const result = await window.electronAPI.discoverKNXInterfaces();
+      
+      if (result.success && result.interfaces) {
+        setKnxInterfaces(result.interfaces);
+        if (result.interfaces.length === 0) {
+          setInterfaceError('No KNX interfaces found on the network. Make sure your KNX interface is connected and accessible.');
+        }
+      } else {
+        setInterfaceError(result.error || 'Failed to discover KNX interfaces');
+        setKnxInterfaces([]);
+      }
+    } catch (err) {
+      setInterfaceError(err instanceof Error ? err.message : 'Failed to discover KNX interfaces');
+      setKnxInterfaces([]);
+    } finally {
+      setIsDiscovering(false);
+    }
+  };
+
+  const handleSelectInterface = async (knxInterface: KNXInterface) => {
+    if (!window.electronAPI) {
+      setInterfaceError('KNX connection not available. This feature requires the Electron environment.');
+      return;
+    }
+
+    setIsConnecting(true);
+    setInterfaceError(null);
+    
+    try {
+      const result = await window.electronAPI.connectKNXInterface(knxInterface);
+      
+      if (result.success) {
+        setSelectedInterface(knxInterface);
+        // Clear existing data when connecting to live interface
+        setCommunicationLog(null);
+        setSelectedTelegram(null);
+        setLiveTelegrams([]);
+        setCurrentFile(null);
+        setError(null);
+      } else {
+        setInterfaceError(result.error || 'Failed to connect to KNX interface');
+        setIsConnecting(false);
+      }
+    } catch (err) {
+      setInterfaceError(err instanceof Error ? err.message : 'Failed to connect to KNX interface');
+      setIsConnecting(false);
+    }
+  };
+
+  const handleDisconnectInterface = async () => {
+    if (!window.electronAPI || !isConnected) return;
+    
+    try {
+      const result = await window.electronAPI.disconnectKNXInterface();
+      if (result.success) {
+        setIsConnected(false);
+        setSelectedInterface(null);
+        setLiveTelegrams([]);
+      } else {
+        setInterfaceError(result.error || 'Failed to disconnect from KNX interface');
+      }
+    } catch (err) {
+      setInterfaceError(err instanceof Error ? err.message : 'Failed to disconnect from KNX interface');
+    }
+  };
+
+  const handleCloseInterfaceSelector = () => {
+    setShowInterfaceSelector(false);
+    setInterfaceError(null);
+  };
+
   if (loading) {
     return (
       <div className="telegram-viewer">
@@ -179,7 +329,7 @@ export const TelegramViewer: React.FC = () => {
     );
   }
 
-  if (!communicationLog) {
+  if (!communicationLog && !isConnected) {
     return (
       <div className="telegram-viewer">
         <div className="telegram-viewer-header">
@@ -187,6 +337,15 @@ export const TelegramViewer: React.FC = () => {
             <h1>Telegram Viewer</h1>
           </div>
           <div className="header-actions">
+            {isConnected ? (
+              <button onClick={handleDisconnectInterface} className="disconnect-button">
+                Disconnect
+              </button>
+            ) : (
+              <button onClick={handleOpenInterfaceSelector} className="interface-button">
+                Select Interface
+              </button>
+            )}
             <button onClick={handleOpenFile} className="open-file-button">
               Open File
             </button>
@@ -199,6 +358,16 @@ export const TelegramViewer: React.FC = () => {
             Open XML File
           </button>
         </div>
+        
+        <InterfaceSelector
+          isOpen={showInterfaceSelector}
+          interfaces={knxInterfaces}
+          isDiscovering={isDiscovering}
+          error={interfaceError || undefined}
+          onClose={handleCloseInterfaceSelector}
+          onSelect={handleSelectInterface}
+          onDiscover={handleDiscoverInterfaces}
+        />
       </div>
     );
   }
@@ -214,9 +383,20 @@ export const TelegramViewer: React.FC = () => {
             )}
           </div>
           <div className="connection-info">
-            <span className="connection-name">{communicationLog.recordStart.connectionName}</span>
-            <span className="connection-mode">{communicationLog.recordStart.mode}</span>
-            <span className="connection-host">{communicationLog.recordStart.host}</span>
+            {isConnected && selectedInterface ? (
+              <>
+                <span className="connection-name">Live KNX Connection</span>
+                <span className="connection-mode">Busmonitor</span>
+                <span className="connection-status connected">● Connected</span>
+                <span className="knx-interface">KNX: {selectedInterface.ip}:{selectedInterface.port}</span>
+              </>
+            ) : communicationLog ? (
+              <>
+                <span className="connection-name">{communicationLog.recordStart.connectionName}</span>
+                <span className="connection-mode">{communicationLog.recordStart.mode}</span>
+                <span className="connection-host">{communicationLog.recordStart.host}</span>
+              </>
+            ) : null}
           </div>
           <div className="search-container">
             <input
@@ -238,6 +418,15 @@ export const TelegramViewer: React.FC = () => {
           </div>
         </div>
         <div className="header-actions">
+          {isConnected ? (
+            <button onClick={handleDisconnectInterface} className="disconnect-button">
+              Disconnect
+            </button>
+          ) : (
+            <button onClick={handleOpenInterfaceSelector} className="interface-button">
+              {isConnecting ? 'Connecting...' : 'Select Interface'}
+            </button>
+          )}
           <button onClick={handleOpenFile} className="open-file-button">
             Open File
           </button>
@@ -257,6 +446,16 @@ export const TelegramViewer: React.FC = () => {
         />
         <TelegramDetail telegram={selectedTelegram} />
       </div>
+      
+      <InterfaceSelector
+        isOpen={showInterfaceSelector}
+        interfaces={knxInterfaces}
+        isDiscovering={isDiscovering}
+        error={interfaceError || undefined}
+        onClose={handleCloseInterfaceSelector}
+        onSelect={handleSelectInterface}
+        onDiscover={handleDiscoverInterfaces}
+      />
     </div>
   );
 };

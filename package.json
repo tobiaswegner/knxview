@@ -1,6 +1,6 @@
 {
   "name": "knxview",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc && webpack --mode=production",
@@ -10,7 +10,7 @@
     "dev": "concurrently \"npm run dev-react\" \"npm run dev-electron\"",
     "dev-react": "webpack serve --mode=development",
     "dev-electron": "npm run build-electron && NODE_ENV=development electron . --no-sandbox --disable-gpu",
-    "start": "electron . --no-sandbox --disable-gpu",
+    "start": "electron . --no-sandbox --disable-gpu --disable-web-security",
     "package": "npm run build-all && electron-builder",
     "package-all": "npm run build-all && electron-builder --publish=never",
     "dist": "npm run build-all && electron-builder --publish=always",
@@ -38,6 +38,7 @@
     "webpack-dev-server": "^5.2.2"
   },
   "dependencies": {
+    "knxnetjs": "^1.6.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },

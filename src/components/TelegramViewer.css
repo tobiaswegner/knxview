@@ -52,6 +52,16 @@
   color: #388e3c;
 }
 
+.knx-interface {
+  background-color: #fff3e0;
+  color: #f57c00;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: monospace;
+}
+
 .search-container {
   display: flex;
   align-items: center;
@@ -117,6 +127,7 @@
 }
 
 .open-file-button,
+.interface-button,
 .refresh-button,
 .retry-button,
 .clear-button {
@@ -140,6 +151,18 @@
 
 .open-file-button:active {
   background-color: #3d8b40;
+}
+
+.interface-button {
+  background-color: #ff9800;
+}
+
+.interface-button:hover {
+  background-color: #f57c00;
+}
+
+.interface-button:active {
+  background-color: #ef6c00;
 }
 
 .open-file-button.large {
@@ -255,4 +278,36 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.connection-status {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.connection-status.connected {
+  background-color: #e8f5e8;
+  color: #388e3c;
+}
+
+.disconnect-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.disconnect-button:hover {
+  background-color: #d32f2f;
+}
+
+.disconnect-button:active {
+  background-color: #c62828;
 }

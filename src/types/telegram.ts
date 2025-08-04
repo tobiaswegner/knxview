@@ -2,9 +2,9 @@ export interface Telegram {
   timestamp: string;
   connectionName: string;
   service: string;
-  frameFormat: string;
+  frameFormat?: string;
   rawData: string;
-  id: string;
+  id?: string;
   sourceAddress?: string;
   destinationAddress?: string;
   payloadType?: string;
@@ -15,6 +15,7 @@ export interface Telegram {
   transportLayerControl?: string;
   apci?: string;
   parseError?: string;
+  parsed?: any;
 }
 
 export interface CommunicationLog {
