@@ -3,6 +3,7 @@ import { Telegram, CommunicationLog } from '../types/telegram';
 import { VirtualizedTelegramList } from './VirtualizedTelegramList';
 import { TelegramDetail } from './TelegramDetail';
 import { InterfaceSelector } from './InterfaceSelector';
+import { Toolbar } from './Toolbar';
 import { parseTelegramsXML } from '../utils/xmlParser';
 import { KNXInterface } from '../types/electron';
 import '../types/electron';
@@ -82,27 +83,6 @@ export const TelegramViewer: React.FC = () => {
   }, []);
 
   // Remove auto-loading of sample data
-
-  const loadSampleData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Load the sample XML file
-      const response = await fetch('/samples/telegrams.xml');
-      if (!response.ok) {
-        throw new Error(`Failed to load telegrams: ${response.status}`);
-      }
-      
-      const xmlContent = await response.text();
-      await loadFromXMLContent(xmlContent);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load telegrams');
-      console.error('Error loading telegrams:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSelectTelegram = (telegram: Telegram) => {
     setSelectedTelegram(telegram);
@@ -336,21 +316,18 @@ export const TelegramViewer: React.FC = () => {
           <div className="header-info">
             <h1>Telegram Viewer</h1>
           </div>
-          <div className="header-actions">
-            {isConnected ? (
-              <button onClick={handleDisconnectInterface} className="disconnect-button">
-                Disconnect
-              </button>
-            ) : (
-              <button onClick={handleOpenInterfaceSelector} className="interface-button">
-                Select Interface
-              </button>
-            )}
-            <button onClick={handleOpenFile} className="open-file-button">
-              Open File
-            </button>
-          </div>
         </div>
+        <Toolbar
+          isConnected={isConnected}
+          isConnecting={isConnecting}
+          onOpenFile={handleOpenFile}
+          onSelectInterface={handleOpenInterfaceSelector}
+          onDisconnect={handleDisconnectInterface}
+          onRefresh={handleRefresh}
+          onClear={handleClearData}
+          searchFilter={searchFilter}
+          onSearchChange={setSearchFilter}
+        />
         <div className="telegram-viewer-empty">
           <h2>No Telegram File Loaded</h2>
           <p>Click "Open File" to load an XML telegram file and start viewing communications.</p>
@@ -398,46 +375,19 @@ export const TelegramViewer: React.FC = () => {
               </>
             ) : null}
           </div>
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder="Search telegrams..."
-              value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
-              className="search-input"
-            />
-            {searchFilter && (
-              <button 
-                onClick={() => setSearchFilter('')}
-                className="clear-search-button"
-                title="Clear search"
-              >
-                ×
-              </button>
-            )}
-          </div>
-        </div>
-        <div className="header-actions">
-          {isConnected ? (
-            <button onClick={handleDisconnectInterface} className="disconnect-button">
-              Disconnect
-            </button>
-          ) : (
-            <button onClick={handleOpenInterfaceSelector} className="interface-button">
-              {isConnecting ? 'Connecting...' : 'Select Interface'}
-            </button>
-          )}
-          <button onClick={handleOpenFile} className="open-file-button">
-            Open File
-          </button>
-          <button onClick={handleRefresh} className="refresh-button">
-            Refresh
-          </button>
-          <button onClick={handleClearData} className="clear-button">
-            Clear
-          </button>
         </div>
       </div>
+      <Toolbar
+        isConnected={isConnected}
+        isConnecting={isConnecting}
+        onOpenFile={handleOpenFile}
+        onSelectInterface={handleOpenInterfaceSelector}
+        onDisconnect={handleDisconnectInterface}
+        onRefresh={handleRefresh}
+        onClear={handleClearData}
+        searchFilter={searchFilter}
+        onSearchChange={setSearchFilter}
+      />
       <div className="telegram-viewer-content">
         <VirtualizedTelegramList
           telegrams={filteredTelegrams}

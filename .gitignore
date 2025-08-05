@@ -47,3 +47,6 @@ coverage/
 # Electron specific
 out/
 release/
+
+# Sample data
+samples/

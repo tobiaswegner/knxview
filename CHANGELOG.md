@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-08-05
+
+### Added
+- Dedicated toolbar with all main action buttons (Open File, Select Interface, Disconnect, Refresh, Clear)
+- Integrated search functionality in toolbar with inline clear button
+- Modern button design with icons and hover effects
+- Consistent toolbar interface across all application states
+
+### Changed
+- Moved all action buttons from header to dedicated toolbar
+- Simplified header to focus on information display only
+- Enhanced UI organization with better visual hierarchy
+- Search input now always visible and easily accessible
+
+### Improved
+- Better user experience with more intuitive button placement
+- Cleaner interface design with separated concerns (info vs actions)
+- More discoverable actions with consistent positioning
+
 ## [1.1.0] - 2025-08-04
 
 ### Added

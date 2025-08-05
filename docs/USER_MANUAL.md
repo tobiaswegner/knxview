@@ -41,9 +41,9 @@ KNX Viewer is a powerful tool for monitoring and analyzing KNX/EIB bus communica
 ### Download and Install
 
 1. **Download**: Get the latest release from the releases page
-   - Windows: `knxview-setup-1.1.0.exe`
-   - macOS: `knxview-1.1.0.dmg`
-   - Linux: `knxview-1.1.0.AppImage` or `knxview_1.1.0_amd64.deb`
+   - Windows: `knxview-setup-1.2.0.exe`
+   - macOS: `knxview-1.2.0.dmg`
+   - Linux: `knxview-1.2.0.AppImage` or `knxview_1.2.0_amd64.deb`
 
 2. **Install**:
    - **Windows**: Run the installer and follow the setup wizard
@@ -65,10 +65,10 @@ When you first open KNX Viewer, you'll see the main interface with two primary o
 
 The main window consists of:
 
-- **Header Bar**: Shows connection status, file information, and controls
+- **Header Bar**: Shows connection status and file information
+- **Toolbar**: Contains all action buttons (Open File, Select Interface, Disconnect, Refresh, Clear) and search functionality
 - **Telegram List**: Displays telegrams in a scrollable, virtualized list
 - **Detail Panel**: Shows detailed information about the selected telegram
-- **Search Bar**: Allows filtering telegrams by various criteria
 
 ## Working with Files
 
@@ -81,7 +81,7 @@ KNX Viewer supports XML files containing KNX telegram data, typically exported f
 
 ### Loading a File
 
-1. Click **"Open File"** in the header or main screen
+1. Click **"Open File"** in the toolbar or main screen
 2. Browse to your XML file location
 3. Select the file and click **"Open"**
 4. Wait for the file to be processed (progress shown for large files)
@@ -155,7 +155,7 @@ When connected to an interface:
 ### Disconnecting
 
 To stop monitoring:
-1. Click **"Disconnect"** in the header
+1. Click **"Disconnect"** in the toolbar
 2. Connection closes and live telegram collection stops
 3. Previously captured telegrams remain visible
 4. You can reconnect or switch to file mode
@@ -257,7 +257,7 @@ The search function allows filtering telegrams by multiple criteria:
 
 ### Clearing Search
 
-Click the **"×"** button in the search bar to clear filters and show all telegrams.
+Click the **"×"** button in the search input (located in the toolbar) to clear filters and show all telegrams.
 
 ## Troubleshooting
 
