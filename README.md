@@ -1,182 +1,172 @@
-# KNXView
+# KNX Viewer
 
-A modern Electron-based application for viewing and analyzing KNX telegrams with advanced parsing capabilities for the KNX/EIB protocol.
+A powerful Electron-based application for monitoring and analyzing KNX/EIB bus communication in real-time and from recorded files.
+
+![KNX Viewer](https://img.shields.io/badge/version-1.1.0-blue.svg)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
+![License](https://img.shields.io/badge/license-ISC-green.svg)
 
 ## Features
 
-- **Telegram Viewer**: Comprehensive list and detail view for KNX telegrams
-- **Virtual Scrolling**: Optimized performance for large datasets (50,000+ telegrams)
-- **KNX Protocol Support**: Full parsing of telegram format according to KNX standard
-- **File Operations**: Load XML files containing telegram data via file dialog
-- **Search & Filter**: Real-time search across all telegram fields including payload types
-- **Cross-Platform**: Available for Windows, macOS, and Linux
-- **Modern UI**: Clean, responsive interface built with React
+### 🔄 Real-time Monitoring
+- Connect to KNX interfaces via KNXnet/IP
+- Live busmonitor mode for passive traffic monitoring
+- Automatic interface discovery on local network
+- Real-time telegram parsing and display
+
+### 📊 Comprehensive Analysis
+- Full CommonEmi protocol parsing
+- Individual and group address resolution
+- APCI (Application Protocol Control Information) decoding
+- Message type identification (Read/Write/Response)
+- Payload analysis and hex data inspection
+
+### 📁 File Support
+- Import XML telegram files from ETS and other tools
+- High-performance processing of large datasets
+- Chunked loading with progress indication
+- Support for thousands of telegrams
+
+### 🔍 Advanced Search & Filtering
+- Real-time search across all telegram fields
+- Filter by address, payload, timestamp, or message type
+- Case-insensitive partial matching
+- Works with both live and file-loaded data
+
+### ⚡ Performance Optimized
+- Virtualized rendering for smooth scrolling
+- Memory-efficient handling of large datasets
+- Non-blocking file processing
+- Responsive UI during heavy operations
 
 ## Installation
 
-### Binary Releases
-Download pre-built binaries from the releases page for your platform:
-- Windows: `.exe` installer
-- macOS: `.dmg` disk image 
-- Linux: `.AppImage` or `.deb` package
+### Pre-built Binaries
 
-### Development Setup
+Download the latest release for your platform:
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd knxview
-   ```
+- **Windows**: [knxview-setup-1.1.0.exe](../../releases)
+- **macOS**: [knxview-1.1.0.dmg](../../releases)
+- **Linux**: [knxview-1.1.0.AppImage](../../releases) or [knxview_1.1.0_amd64.deb](../../releases)
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+### Build from Source
 
-3. **Development mode:**
-   ```bash
-   npm run dev
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/tobiaswegner/knxview.git
+cd knxview
 
-4. **Build for production:**
-   ```bash
-   npm run build-all
-   ```
+# Install dependencies
+npm install
 
-5. **Package binary:**
-   ```bash
-   npm run package
-   ```
+# Build the application
+npm run build-all
 
-## Usage
-
-### Loading Telegram Data
-1. Click "Open File" to select an XML file containing telegram data
-2. The application will parse and display telegrams in the main list view
-3. Use "Clear" to remove all loaded telegrams
-
-### Viewing Telegrams
-- **List View**: Shows overview of all telegrams with timestamps, addresses, and payload types
-- **Detail View**: Click any telegram to see comprehensive parsed data including:
-  - Source and destination addresses
-  - Control bytes and format information
-  - Transport layer control and APCI values
-  - Payload data in hexadecimal format
-
-### Search & Navigation
-- Use the search box to filter telegrams by any field
-- Search works across timestamps, addresses, payload types, and data
-- Scroll through large datasets smoothly with virtual scrolling
-
-## KNX Protocol Support
-
-### Telegram Format Parsing
-The application provides comprehensive parsing of telegram format according to the KNX standard:
-
-#### Frame Structure
-- **Message Code**: Command identifier
-- **Additional Info**: Variable length metadata
-- **Control Field**: Frame type and routing information
-- **Source Address**: Individual address in format `area.line.device`
-- **Destination Address**: Individual (`area.line.device`) or group (`main/middle/sub`) address
-- **Data Length**: Payload size indicator
-- **Transport Layer Control (TLC)**: 6-bit transport control field
-- **APCI**: 10-bit Application Layer Protocol Control Information
-- **Payload**: Variable length data
-
-#### Format Detection
-- **Standard Format**: MSB of control byte = 1, uses 4-bit data length
-- **Extended Format**: MSB of control byte = 0, uses 8-bit data length
-- **Control Byte 2**: Additional control information
-  - Extended format: Separate byte
-  - Standard format: Encoded in upper 4 bits of length field
-
-#### APCI Command Types
-Supported Application Layer Protocol Control Information commands:
-- `0x000`: GroupValue_Read
-- `0x040` (mask `0x3FC`): GroupValue_Response  
-- `0x080` (mask `0x3FC`): GroupValue_Write
-- `0x300` (mask `0x3FC`): DeviceDescriptor_Read
-- `0x340` (mask `0x3FC`): DeviceDescriptor_Response
-- `0x2C7` (mask `0x3FF`): FunctionProperty_Command
-- `0x2C9` (mask `0x3FF`): FunctionProperty_StateResponse
-
-#### Address Types
-- **Individual Addresses**: Physical device addresses in dotted notation
-- **Group Addresses**: Logical addresses for group communication in slash notation
-- **Address Detection**: Automatic identification based on control byte 2 MSB
-
-## Technical Architecture
-
-### Core Components
-- **Main Process** (`main.ts`): Electron main process with file dialog handling
-- **Renderer Process**: React application with virtual scrolling
-- **Preload Script** (`preload.ts`): Secure IPC communication bridge
-- **Telegram Parser** (`commonEmiParser.ts`): KNX protocol parsing engine
-
-### Performance Features
-- **Virtual Scrolling**: Renders only visible items for optimal performance
-- **Chunked Processing**: Large files processed in chunks to prevent UI blocking
-- **Efficient Search**: Real-time filtering without performance degradation
-- **Memory Management**: Optimized data structures for large datasets
-
-### Security
-- **Context Isolation**: Secure separation between main and renderer processes
-- **No Node Integration**: Renderer process runs in sandboxed environment
-- **IPC Communication**: All file operations handled securely in main process
-
-## Development
-
-### Project Structure
-```
-├── main.ts              # Electron main process
-├── preload.ts           # Preload script for IPC
-├── src/
-│   ├── components/      # React components
-│   ├── types/          # TypeScript type definitions
-│   └── utils/          # Utility functions and parsers
-├── dist/               # Compiled output
-├── public/             # Static assets
-└── release/            # Packaged binaries
+# Start the application
+npm start
 ```
 
-### Build Scripts
-- `npm run dev`: Start development server
-- `npm run build-all`: Build both Electron and React
-- `npm run package`: Create platform-specific binaries
-- `npm run package-all`: Build for all platforms
+## Quick Start
 
-### Technology Stack
-- **Electron**: Cross-platform desktop application framework
-- **React**: Modern UI library with hooks
-- **TypeScript**: Type-safe JavaScript development
-- **Webpack**: Module bundling and development server
+### 1. Real-time Monitoring
 
-## Troubleshooting
+1. **Launch** KNX Viewer
+2. **Click** "Select Interface" to discover KNX interfaces
+3. **Choose** your KNX interface from the list
+4. **Connect** and start monitoring live bus traffic
+5. **Analyze** telegrams in real-time with detailed parsing
 
-### Common Issues
-- **File not loading**: Ensure XML file contains valid telegram data
-- **Performance issues**: Use virtual scrolling for large datasets
-- **Search not working**: Check that search terms match telegram field formats
+### 2. File Analysis
 
-### Development Issues
-- **Build failures**: Verify all dependencies are installed
-- **TypeScript errors**: Check type definitions match actual data structures
-- **Electron issues**: Ensure proper IPC communication setup
+1. **Click** "Open File" to load an XML telegram file
+2. **Browse** to your KNX log file (ETS export or similar)
+3. **Wait** for processing (progress shown for large files)
+4. **Explore** telegrams with search and filtering tools
+
+## System Requirements
+
+- **OS**: Windows 10+, macOS 10.14+, Linux (Ubuntu 18.04+)
+- **RAM**: 4GB minimum, 8GB recommended
+- **Network**: Ethernet connection for KNX interface access
+- **Storage**: 100MB free space
+
+## Supported KNX Features
+
+### Protocol Support
+- **KNXnet/IP**: Standard KNX over IP communication
+- **CommonEmi**: Complete frame parsing and analysis
+- **Busmonitor Mode**: Passive monitoring of all bus traffic
+
+### Address Formats
+- **Individual Addresses**: Area.Line.Device (e.g., 1.2.34)
+- **Group Addresses**: Main/Middle/Sub (e.g., 1/2/34)
+
+### Message Types
+- GroupValue_Read/Write/Response
+- DeviceDescriptor_Read/Response
+- FunctionProperty_Command/StateResponse
+- And more...
+
+## Documentation
+
+- **[User Manual](docs/USER_MANUAL.md)**: Complete guide for end users
+- **[Development Guide](docs/DEVELOPMENT.md)**: Technical documentation for developers
+- **[Changelog](CHANGELOG.md)**: Version history and release notes
+
+## Architecture
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   React UI      │◄──►│  Electron Main   │◄──►│  KNX Interface  │
+│                 │    │                  │    │                 │
+│ • Telegram List │    │ • IPC Handlers   │    │ • KNXnet/IP     │
+│ • Search/Filter │    │ • KNX Connection │    │ • Busmonitor    │
+│ • Detail View   │    │ • CommonEmi      │    │ • Real-time     │
+│                 │    │   Parser         │    │   Telegrams     │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+We welcome contributions! Please see our [Development Guide](docs/DEVELOPMENT.md) for:
+
+- Development setup instructions
+- Code style guidelines  
+- Architecture overview
+- Testing procedures
+
+### Development Commands
+
+```bash
+npm run dev          # Development mode with hot reload
+npm run build-all    # Build complete application
+npm run package      # Create distributable package
+npm test             # Run test suite (when available)
+```
 
 ## License
 
-ISC License - see LICENSE file for details
+This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
 
-## Author
+## Changelog
 
-Tobias Wegner - git@tobiaswegner.de  
-Homepage: https://www.tobiaswegner.de
+See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes and new features.
+
+## Support
+
+- **🐛 Bug Reports**: [Create an issue](../../issues) with detailed reproduction steps
+- **💡 Feature Requests**: [Open a discussion](../../discussions) to propose new features
+- **📖 Documentation**: Check the [User Manual](docs/USER_MANUAL.md) and [Development Guide](docs/DEVELOPMENT.md)
+- **💬 Questions**: Use [GitHub Discussions](../../discussions) for general questions
+
+## Acknowledgments
+
+- Built with [Electron](https://electronjs.org/) and [React](https://reactjs.org/)
+- KNX communication via [knxnetjs](https://www.npmjs.com/package/knxnetjs)
+- Inspired by the KNX/EIB automation community
+
+---
+
+**Made with ❤️ for the KNX community**
+
+*KNX Viewer helps you understand your building automation better through detailed bus traffic analysis and real-time monitoring.*
