@@ -5,6 +5,8 @@ A powerful Electron-based application for monitoring and analyzing KNX/EIB bus c
 ![KNX Viewer](https://img.shields.io/badge/version-1.1.0-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
 ![License](https://img.shields.io/badge/license-ISC-green.svg)
+[![CI](https://github.com/tobiaswegner/knxview/workflows/CI/badge.svg)](https://github.com/tobiaswegner/knxview/actions/workflows/build.yml)
+[![Security](https://github.com/tobiaswegner/knxview/workflows/Security/badge.svg)](https://github.com/tobiaswegner/knxview/actions/workflows/security.yml)
 
 ## Features
 

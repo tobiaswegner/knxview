@@ -1,0 +1,123 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: windows
+          - os: macos-latest
+            platform: macos
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build application
+        run: npm run build-all
+        
+      - name: Package Electron app (Linux)
+        if: matrix.platform == 'linux'
+        run: npm run package-all
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Package Electron app (Windows)
+        if: matrix.platform == 'windows'
+        run: npm run package
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Package Electron app (macOS)
+        if: matrix.platform == 'macos'
+        run: npm run package
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+          
+      - name: Upload release assets (Linux)
+        if: matrix.platform == 'linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-artifacts
+          path: |
+            release/*.AppImage
+            release/*.deb
+            
+      - name: Upload release assets (Windows)
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-artifacts
+          path: release/*.exe
+          
+      - name: Upload release assets (macOS)
+        if: matrix.platform == 'macos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-artifacts
+          path: release/*.dmg
+          
+  create-release:
+    needs: release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+          
+      - name: Display structure of downloaded files
+        run: ls -la release-artifacts/
+        
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "release-artifacts/**/*"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generateReleaseNotes: true
+          name: "KNX Viewer ${{ github.ref_name }}"
+          body: |
+            ## What's Changed
+            
+            Full changelog: https://github.com/${{ github.repository }}/compare/v1.0.0...${{ github.ref_name }}
+            
+            ## Installation
+            
+            ### Windows
+            Download and run `knxview-setup-${{ github.ref_name }}.exe`
+            
+            ### macOS
+            Download `knxview-${{ github.ref_name }}.dmg`, open and drag to Applications
+            
+            ### Linux
+            - **AppImage**: Download `knxview-${{ github.ref_name }}.AppImage`, make executable and run
+            - **Debian**: Download and install `knxview_${{ github.ref_name }}_amd64.deb`
+            
+            ## System Requirements
+            - Windows 10+, macOS 10.14+, or Linux (Ubuntu 18.04+)
+            - 4GB RAM minimum, 8GB recommended
+            - Network connection for KNX interface access

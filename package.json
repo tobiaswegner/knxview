@@ -14,7 +14,10 @@
     "package": "npm run build-all && electron-builder",
     "package-all": "npm run build-all && electron-builder --publish=never",
     "dist": "npm run build-all && electron-builder --publish=always",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No tests specified\"",
+    "lint": "echo \"No linting configured\"",
+    "clean": "rimraf dist release",
+    "prebuild": "npm run clean"
   },
   "keywords": [],
   "author": "Tobias Wegner <git@tobiaswegner.de>",
