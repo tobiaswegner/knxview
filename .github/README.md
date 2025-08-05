@@ -121,7 +121,8 @@ To create a new release:
 
 - `GITHUB_TOKEN`: Automatically provided by GitHub
   - Used for: Creating releases, uploading artifacts
-  - Permissions: Contents (write), Actions (read)
+  - Permissions: Automatically configured in workflows
+  - **Note**: Workflows include explicit permission declarations for security
 
 ### Optional Secrets (for enhanced features)
 

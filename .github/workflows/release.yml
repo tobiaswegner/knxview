@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+  actions: read
+  packages: write
+
 jobs:
   release:
     runs-on: ${{ matrix.os }}
@@ -80,6 +85,8 @@ jobs:
   create-release:
     needs: release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout repository
@@ -93,31 +100,52 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -la release-artifacts/
         
+      - name: Flatten artifacts directory
+        run: |
+          mkdir -p flattened-artifacts
+          find release-artifacts -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.deb" \) -exec cp {} flattened-artifacts/ \;
+          ls -la flattened-artifacts/
+        
       - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
+        uses: softprops/action-gh-release@v2
         with:
-          artifacts: "release-artifacts/**/*"
-          token: ${{ secrets.GITHUB_TOKEN }}
-          generateReleaseNotes: true
+          files: flattened-artifacts/*
+          generate_release_notes: true
           name: "KNX Viewer ${{ github.ref_name }}"
           body: |
-            ## What's Changed
+            ## 🎉 KNX Viewer ${{ github.ref_name }}
             
-            Full changelog: https://github.com/${{ github.repository }}/compare/v1.0.0...${{ github.ref_name }}
+            A powerful Electron-based application for monitoring and analyzing KNX/EIB bus communication in real-time and from recorded files.
             
-            ## Installation
+            ### 🚀 Key Features
+            - **Real-time Monitoring**: Connect to KNX interfaces via KNXnet/IP
+            - **Live Busmonitor Mode**: Passive monitoring of all bus traffic
+            - **Comprehensive Analysis**: Full CommonEmi protocol parsing
+            - **File Support**: Import XML telegram files from ETS
+            - **Advanced Search**: Filter by address, payload, timestamp
+            - **Cross-Platform**: Windows, macOS, and Linux support
             
-            ### Windows
+            ### 📦 Installation
+            
+            #### Windows
             Download and run `knxview-setup-${{ github.ref_name }}.exe`
             
-            ### macOS
+            #### macOS
             Download `knxview-${{ github.ref_name }}.dmg`, open and drag to Applications
             
-            ### Linux
+            #### Linux
             - **AppImage**: Download `knxview-${{ github.ref_name }}.AppImage`, make executable and run
             - **Debian**: Download and install `knxview_${{ github.ref_name }}_amd64.deb`
             
-            ## System Requirements
-            - Windows 10+, macOS 10.14+, or Linux (Ubuntu 18.04+)
-            - 4GB RAM minimum, 8GB recommended
-            - Network connection for KNX interface access
+            ### 💻 System Requirements
+            - **OS**: Windows 10+, macOS 10.14+, or Linux (Ubuntu 18.04+)
+            - **RAM**: 4GB minimum, 8GB recommended
+            - **Network**: Ethernet connection for KNX interface access
+            - **Storage**: 100MB free space
+            
+            ### 📚 Documentation
+            - [User Manual](https://github.com/${{ github.repository }}/blob/main/docs/USER_MANUAL.md)
+            - [Development Guide](https://github.com/${{ github.repository }}/blob/main/docs/DEVELOPMENT.md)
+            - [Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+            
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/v1.0.0...${{ github.ref_name }}
