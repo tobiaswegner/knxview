@@ -1,7 +1,7 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
-const path = require('path');
-const fs = require('fs');
-const { createDiscovery, createBusmonitor } = require('knxnetjs');
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import * as path from 'path';
+import * as fs from 'fs';
+import { discoverInterfaces, createInterface } from 'knxnetjs';
 
 // Import the parsing function
 import { parseCommonEmi } from './src/utils/commonEmiParser';
@@ -81,26 +81,31 @@ ipcMain.handle('dialog:openFile', async () => {
 // IPC handler for KNX interface discovery
 ipcMain.handle('knx:discoverInterfaces', async () => {
   try {
-    const discovery = createDiscovery();
+    const discoveredInterfaces: any[] = [];
     
-    // Use the discover method which returns a Promise
-    const endpoints = await discovery.discover({ timeout: 5000 });
-    
-    const interfaces = endpoints.map((endpoint: any) => ({
-      ip: endpoint.address || endpoint.ip,
-      port: endpoint.port || 3671,
-      name: endpoint.deviceName || endpoint.name,
-      mac: endpoint.macAddress || endpoint.mac,
-      multicastAddress: endpoint.multicastAddress,
-      serialNumber: endpoint.serialNumber,
-      description: endpoint.friendlyName || endpoint.description || `KNX Interface at ${endpoint.address || endpoint.ip}`
-    }));
-
-    discovery.close();
+    // Use the new discoverInterfaces API with callback
+    await discoverInterfaces(
+      (interfaceInfo: any) => {
+        // Callback called for each discovered interface
+        discoveredInterfaces.push({
+          address: interfaceInfo.address,
+          port: interfaceInfo.port || 3671,
+          type: interfaceInfo.type,
+          name: interfaceInfo.name,
+          macAddress: interfaceInfo.macAddress,
+          multicastAddress: interfaceInfo.multicastAddress,
+          serialNumber: interfaceInfo.serialNumber,
+          description: interfaceInfo.friendlyName || interfaceInfo.description || `KNX Interface at ${interfaceInfo.address}`,
+          // Keep ip for backward compatibility with frontend
+          ip: interfaceInfo.address
+        });
+      },
+      { timeout: 5000 }
+    );
 
     return {
       success: true,
-      interfaces: interfaces
+      interfaces: discoveredInterfaces
     };
   } catch (error) {
     return {
@@ -123,15 +128,11 @@ ipcMain.handle('knx:connectInterface', async (_event: any, interfaceConfig: any)
       activeTunnel = null;
     }
 
-    // Create busmonitor connection
-    const busmonitor = createBusmonitor(
-      interfaceConfig.ip,
-      interfaceConfig.port || 3671,
-      0 // Let the system choose a local port
-    );
+    // Create interface connection in busmonitor mode using discovered interface info
+    const knxInterface = createInterface(interfaceConfig, true); // true for busmonitor mode
 
     // Set up telegram monitoring
-    busmonitor.on('recv', (frame: any) => {
+    knxInterface.on('recv', (frame: any) => {
       console.log('Received KNX frame:', frame);
       
       if (mainWindow && mainWindow.webContents) {
@@ -163,7 +164,7 @@ ipcMain.handle('knx:connectInterface', async (_event: any, interfaceConfig: any)
       }
     });
 
-    busmonitor.on('error', (error: any) => {
+    knxInterface.on('error', (error: any) => {
       console.error('KNX busmonitor error:', error);
       if (mainWindow && mainWindow.webContents) {
         mainWindow.webContents.send('knx:error', {
@@ -173,7 +174,7 @@ ipcMain.handle('knx:connectInterface', async (_event: any, interfaceConfig: any)
     });
 
     // Connect to the interface
-    await busmonitor.connect();
+    await knxInterface.open();
     
     console.log('KNX busmonitor connected');
     if (mainWindow && mainWindow.webContents) {
@@ -182,7 +183,7 @@ ipcMain.handle('knx:connectInterface', async (_event: any, interfaceConfig: any)
       });
     }
     
-    activeTunnel = busmonitor;
+    activeTunnel = knxInterface;
 
     return {
       success: true,

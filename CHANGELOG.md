@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-08-11
+
+### Changed
+- Updated knxnetjs dependency to version 1.9.0
+- Migrated from `createDiscovery` and `createBusmonitor` to new `discoverInterfaces` and `createInterface` APIs
+- Updated interface discovery to use callback-based `discoverInterfaces` API
+- Fixed interface connection to use proper `open()` method instead of `connect()`
+- Converted main.ts from CommonJS require() to ES6 import statements
+
+### Fixed
+- Resolved callback error when discovering KNX interfaces
+- Fixed interface selection and connection issues with new API
+- Improved interface configuration mapping for better compatibility
+
+### Technical Details
+- Interface discovery now uses callback pattern: `discoverInterfaces(callback, options)`
+- Interface creation uses `createInterface(interfaceInfo, busmonitorMode)` with proper type mapping
+- Enhanced interface information structure to include all required properties
+
 ## [1.2.0] - 2025-08-05
 
 ### Added
