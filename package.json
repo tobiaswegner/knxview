@@ -51,7 +51,7 @@
     "directories": {
       "output": "release"
     },
-    "icon": "public/app-icon",
+    "icon": "public/app-icon-512.png",
     "files": [
       "dist/**/*",
       "public/**/*",
@@ -69,7 +69,7 @@
         }
       ],
       "category": "public.app-category.developer-tools",
-      "icon": "public/app-icon.png"
+      "icon": "public/app-icon-512.png"
     },
     "win": {
       "target": [
@@ -98,7 +98,7 @@
         }
       ],
       "category": "Development",
-      "icon": "public/app-icon.png"
+      "icon": "public/app-icon-512.png"
     },
     "nsis": {
       "oneClick": false,
