@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { KNXInterface } from '../types/electron';
 import './InterfaceSelector.css';
+import { LoadingIcon, WarningIcon } from './Icons';
 
 interface InterfaceSelectorProps {
   isOpen: boolean;
@@ -49,12 +50,17 @@ export const InterfaceSelector: React.FC<InterfaceSelectorProps> = ({
             >
               {isDiscovering ? 'Discovering...' : 'Discover Interfaces'}
             </button>
-            {isDiscovering && <div className="spinner">🔄</div>}
+            {isDiscovering && (
+              <div className="spinner">
+                <LoadingIcon size={16} />
+              </div>
+            )}
           </div>
 
           {error && (
             <div className="error-message">
-              <span>⚠️ {error}</span>
+              <WarningIcon size={16} />
+              <span>{error}</span>
             </div>
           )}
 

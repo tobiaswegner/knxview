@@ -48,7 +48,7 @@ export const TelegramViewer: React.FC = () => {
       
       console.log('Adding telegram to live telegrams:', newTelegram);
       setLiveTelegrams(prev => {
-        const updated = [...prev, newTelegram].slice(-10000); // Keep last 10000 telegrams
+        const updated = [...prev, newTelegram];
         console.log('Live telegrams count:', updated.length);
         return updated;
       });

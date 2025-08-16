@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2025-08-16
+
+### Added
+- Professional KNX-themed application icon with network monitoring visualization
+- App icon support across all platforms (Windows ICO, macOS/Linux PNG formats)
+- Comprehensive icon generation in multiple sizes (16x16 to 512x512)
+- CLAUDE.md development documentation with icon conversion commands
+
+### Changed
+- Default save filename now includes timestamp in addition to date (e.g., `knx-telegrams-2025-08-16_14-30-25-123Z.xml`)
+- Enhanced save dialog with more descriptive filename format
+- Updated Electron window configuration to use app icon
+- Improved webpack build process to copy icon assets
+
+### Technical Details
+- Added robust icon path resolution with fallback mechanisms
+- Integrated CopyWebpackPlugin for automatic icon asset copying
+- Icon creation workflow documented for future maintenance
+- Platform-specific icon format configuration in electron-builder
+
 ## [1.4.0] - 2025-08-11
 
 ### Added

@@ -7,9 +7,26 @@ import { discoverInterfaces, createInterface } from 'knxnetjs';
 import { parseCommonEmi } from './src/utils/commonEmiParser';
 
 const createWindow = (): void => {
+  // Try to find the icon in multiple possible locations
+  let iconPath = path.join(__dirname, 'app-icon-transparent.png');
+  
+  if (!fs.existsSync(iconPath)) {
+    iconPath = path.join(__dirname, 'app-icon-256.png');
+  }
+  if (!fs.existsSync(iconPath)) {
+    iconPath = path.join(__dirname, 'app-icon.png');
+  }
+  if (!fs.existsSync(iconPath)) {
+    iconPath = path.join(__dirname, 'app-icon.ico');
+  }
+  if (!fs.existsSync(iconPath)) {
+    iconPath = path.join(__dirname, '..', 'public', 'app-icon.png');
+  }
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    icon: fs.existsSync(iconPath) ? iconPath : undefined,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -85,7 +102,7 @@ ipcMain.handle('dialog:saveFile', async (_event: any, content: string) => {
       { name: 'XML Files', extensions: ['xml'] },
       { name: 'All Files', extensions: ['*'] }
     ],
-    defaultPath: `knx-telegrams-${new Date().toISOString().split('T')[0]}.xml`
+    defaultPath: `knx-telegrams-${new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_')}.xml`
   });
 
   if (!result.canceled && result.filePath) {

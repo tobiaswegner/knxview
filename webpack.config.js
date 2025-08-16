@@ -36,6 +36,14 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './public/index.html',
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'public/app-icon*.*',
+          to: '[name][ext]'
+        }
+      ]
     })
   ],
 };
