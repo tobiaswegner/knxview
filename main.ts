@@ -78,6 +78,37 @@ ipcMain.handle('dialog:openFile', async () => {
   };
 });
 
+// IPC handler for saving file
+ipcMain.handle('dialog:saveFile', async (_event: any, content: string) => {
+  const result = await dialog.showSaveDialog({
+    filters: [
+      { name: 'XML Files', extensions: ['xml'] },
+      { name: 'All Files', extensions: ['*'] }
+    ],
+    defaultPath: `knx-telegrams-${new Date().toISOString().split('T')[0]}.xml`
+  });
+
+  if (!result.canceled && result.filePath) {
+    try {
+      fs.writeFileSync(result.filePath, content, 'utf-8');
+      return {
+        success: true,
+        filePath: result.filePath
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Failed to save file: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  return {
+    success: false,
+    error: 'Save cancelled'
+  };
+});
+
 // IPC handler for KNX interface discovery
 ipcMain.handle('knx:discoverInterfaces', async () => {
   try {

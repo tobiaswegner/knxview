@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-08-11
+
+### Added
+- File save functionality to export current telegram list to XML format
+- Save button in toolbar with purple styling and smart enabled/disabled states
+- Support for saving both file-loaded and live captured telegrams
+- XML generation that matches the exact format of loaded files
+- Proper ConnectorType detection (USB, KnxIpTunneling, KnxIpRouting) based on interface type
+
+### Changed
+- Live telegram ordering now adds new telegrams at the end (chronological order)
+- Saved XML files use proper chronological sorting with newest telegrams at the end
+- Enhanced RecordStart generation with actual interface information (Host, ConnectionName)
+- XML format now uses CommunicationLog structure with Connection and RecordStop elements
+
+### Fixed
+- Telegram timestamps now properly ordered in saved files
+- XML namespace and structure matches standard KNX telegram format
+- Service names correctly use L_Busmon.ind for busmonitor telegrams
+
+### Technical Details
+- Added xmlGenerator.ts utility for proper XML format generation
+- Enhanced Toolbar component with save functionality and proper button states
+- Updated IPC handlers for file save dialog with automatic filename generation
+- Improved XML escaping and timestamp formatting for cross-tool compatibility
+
 ## [1.3.0] - 2025-08-11
 
 ### Changed

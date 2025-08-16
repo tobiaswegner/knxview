@@ -5,6 +5,7 @@ import { TelegramDetail } from './TelegramDetail';
 import { InterfaceSelector } from './InterfaceSelector';
 import { Toolbar } from './Toolbar';
 import { parseTelegramsXML } from '../utils/xmlParser';
+import { generateCommunicationLogXML, generateTelegramsXML } from '../utils/xmlGenerator';
 import { KNXInterface } from '../types/electron';
 import '../types/electron';
 import './TelegramViewer.css';
@@ -47,7 +48,7 @@ export const TelegramViewer: React.FC = () => {
       
       console.log('Adding telegram to live telegrams:', newTelegram);
       setLiveTelegrams(prev => {
-        const updated = [newTelegram, ...prev].slice(0, 10000);
+        const updated = [...prev, newTelegram].slice(-10000); // Keep last 10000 telegrams
         console.log('Live telegrams count:', updated.length);
         return updated;
       });
@@ -108,6 +109,11 @@ export const TelegramViewer: React.FC = () => {
       (telegram.payload && telegram.payload.toLowerCase().includes(filter))
     );
   }, [communicationLog, liveTelegrams, searchFilter, isConnected]);
+
+  const hasTelegrams = React.useMemo(() => {
+    const allTelegrams = isConnected ? liveTelegrams : (communicationLog?.telegrams || []);
+    return allTelegrams.length > 0;
+  }, [communicationLog?.telegrams, liveTelegrams, isConnected]);
 
   const handleRefresh = () => {
     if (currentFile) {
@@ -177,10 +183,51 @@ export const TelegramViewer: React.FC = () => {
 
   const handleClearData = () => {
     setCommunicationLog(null);
+    setLiveTelegrams([]);
     setSelectedTelegram(null);
     setCurrentFile(null);
     setSearchFilter('');
     setError(null);
+  };
+
+  const handleSaveFile = async () => {
+    if (!window.electronAPI) {
+      setError('File dialog not available. This feature requires the Electron environment.');
+      return;
+    }
+
+    try {
+      const allTelegrams = isConnected ? liveTelegrams : (communicationLog?.telegrams || []);
+      if (allTelegrams.length === 0) {
+        setError('No telegrams to save');
+        return;
+      }
+
+      let xmlContent: string;
+      
+      if (communicationLog && communicationLog.telegrams.length > 0 && !isConnected) {
+        // Save file-loaded telegrams with original record start info
+        xmlContent = generateCommunicationLogXML(communicationLog);
+      } else {
+        // Save live telegrams with generated record start, pass interface info for proper ConnectorType
+        xmlContent = generateTelegramsXML(allTelegrams, undefined, selectedInterface);
+      }
+
+      const result = await window.electronAPI.saveFile(xmlContent);
+      
+      if (result.success) {
+        setError(null);
+        // Could add a success message here if desired
+        console.log('File saved successfully to:', result.filePath);
+      } else {
+        if (result.error && result.error !== 'Save cancelled') {
+          setError(result.error);
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save file');
+      console.error('Error saving file:', err);
+    }
   };
 
   const handleOpenInterfaceSelector = () => {
@@ -321,12 +368,14 @@ export const TelegramViewer: React.FC = () => {
           isConnected={isConnected}
           isConnecting={isConnecting}
           onOpenFile={handleOpenFile}
+          onSaveFile={handleSaveFile}
           onSelectInterface={handleOpenInterfaceSelector}
           onDisconnect={handleDisconnectInterface}
           onRefresh={handleRefresh}
           onClear={handleClearData}
           searchFilter={searchFilter}
           onSearchChange={setSearchFilter}
+          hasTelegrams={hasTelegrams}
         />
         <div className="telegram-viewer-empty">
           <h2>No Telegram File Loaded</h2>
@@ -381,12 +430,14 @@ export const TelegramViewer: React.FC = () => {
         isConnected={isConnected}
         isConnecting={isConnecting}
         onOpenFile={handleOpenFile}
+        onSaveFile={handleSaveFile}
         onSelectInterface={handleOpenInterfaceSelector}
         onDisconnect={handleDisconnectInterface}
         onRefresh={handleRefresh}
         onClear={handleClearData}
         searchFilter={searchFilter}
         onSearchChange={setSearchFilter}
+        hasTelegrams={hasTelegrams}
       />
       <div className="telegram-viewer-content">
         <VirtualizedTelegramList

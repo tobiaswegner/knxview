@@ -52,6 +52,30 @@
   color: white;
 }
 
+.toolbar-button.save-file {
+  border-color: #9c27b0;
+  color: #9c27b0;
+}
+
+.toolbar-button.save-file:hover:not(:disabled) {
+  background-color: #9c27b0;
+  color: white;
+}
+
+.toolbar-button.save-file:disabled {
+  border-color: #ccc;
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.toolbar-button.save-file:disabled:hover {
+  background-color: white;
+  color: #999;
+  transform: none;
+  box-shadow: none;
+}
+
 .toolbar-button.interface {
   border-color: #ff9800;
   color: #ff9800;

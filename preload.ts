@@ -31,6 +31,7 @@ interface KNXConnectionResult {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   openFile: (): Promise<FileResult> => ipcRenderer.invoke('dialog:openFile'),
+  saveFile: (content: string): Promise<FileResult> => ipcRenderer.invoke('dialog:saveFile', content),
   discoverKNXInterfaces: (): Promise<KNXDiscoveryResult> => ipcRenderer.invoke('knx:discoverInterfaces'),
   connectKNXInterface: (interfaceConfig: KNXInterface): Promise<KNXConnectionResult> => 
     ipcRenderer.invoke('knx:connectInterface', interfaceConfig),

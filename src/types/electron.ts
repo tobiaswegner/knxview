@@ -29,6 +29,7 @@ export interface KNXConnectionResult {
 
 export interface ElectronAPI {
   openFile: () => Promise<FileResult>;
+  saveFile: (content: string) => Promise<FileResult>;
   discoverKNXInterfaces: () => Promise<KNXDiscoveryResult>;
   connectKNXInterface: (interfaceConfig: KNXInterface) => Promise<KNXConnectionResult>;
   disconnectKNXInterface: () => Promise<KNXConnectionResult>;

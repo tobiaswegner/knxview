@@ -5,30 +5,42 @@ interface ToolbarProps {
   isConnected: boolean;
   isConnecting: boolean;
   onOpenFile: () => void;
+  onSaveFile: () => void;
   onSelectInterface: () => void;
   onDisconnect: () => void;
   onRefresh: () => void;
   onClear: () => void;
   searchFilter: string;
   onSearchChange: (value: string) => void;
+  hasTelegrams: boolean;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
   isConnected,
   isConnecting,
   onOpenFile,
+  onSaveFile,
   onSelectInterface,
   onDisconnect,
   onRefresh,
   onClear,
   searchFilter,
-  onSearchChange
+  onSearchChange,
+  hasTelegrams
 }) => {
   return (
     <div className="toolbar">
       <div className="toolbar-section">
         <button onClick={onOpenFile} className="toolbar-button open-file">
           📁 Open File
+        </button>
+        <button 
+          onClick={onSaveFile} 
+          className="toolbar-button save-file"
+          disabled={!hasTelegrams}
+          title={hasTelegrams ? "Save telegrams to XML file" : "No telegrams to save"}
+        >
+          💾 Save File
         </button>
         {isConnected ? (
           <button onClick={onDisconnect} className="toolbar-button disconnect">
