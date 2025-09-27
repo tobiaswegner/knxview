@@ -1,6 +1,6 @@
 {
   "name": "knxview",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc && webpack --mode=production",
@@ -41,7 +41,7 @@
     "webpack-dev-server": "^5.2.2"
   },
   "dependencies": {
-    "knxnetjs": "^1.9.0",
+    "knxnetjs": "^1.11.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
