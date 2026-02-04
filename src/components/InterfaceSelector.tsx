@@ -9,7 +9,7 @@ interface InterfaceSelectorProps {
   isDiscovering: boolean;
   error?: string;
   onClose: () => void;
-  onSelect: (knxInterface: KNXInterface) => void;
+  onSelect: (knxInterface: KNXInterface, busmonitorMode?: boolean) => void;
   onDiscover: () => void;
 }
 
@@ -23,12 +23,13 @@ export const InterfaceSelector: React.FC<InterfaceSelectorProps> = ({
   onDiscover
 }) => {
   const [selectedInterface, setSelectedInterface] = useState<KNXInterface | null>(null);
+  const [busmonitorMode, setBusmonitorMode] = useState<boolean>(true);
 
   if (!isOpen) return null;
 
   const handleSelect = () => {
     if (selectedInterface) {
-      onSelect(selectedInterface);
+      onSelect(selectedInterface, busmonitorMode);
       onClose();
     }
   };
@@ -101,6 +102,20 @@ export const InterfaceSelector: React.FC<InterfaceSelectorProps> = ({
                 )}
               </div>
             ))}
+          </div>
+
+          <div className="configuration-section">
+            <label className="busmonitor-checkbox">
+              <input
+                type="checkbox"
+                checked={busmonitorMode}
+                onChange={(e) => setBusmonitorMode(e.target.checked)}
+              />
+              <span className="checkbox-label">Enable Bus Monitor Mode</span>
+              <span className="checkbox-description">
+                Monitor all KNX traffic passively (recommended for logging and analysis)
+              </span>
+            </label>
           </div>
         </div>
 

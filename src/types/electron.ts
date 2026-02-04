@@ -15,6 +15,10 @@ export interface KNXInterface {
   description?: string;
 }
 
+export interface KNXInterfaceConfig extends KNXInterface {
+  busmonitorMode?: boolean;
+}
+
 export interface KNXDiscoveryResult {
   success: boolean;
   interfaces?: KNXInterface[];
@@ -31,7 +35,7 @@ export interface ElectronAPI {
   openFile: () => Promise<FileResult>;
   saveFile: (content: string) => Promise<FileResult>;
   discoverKNXInterfaces: () => Promise<KNXDiscoveryResult>;
-  connectKNXInterface: (interfaceConfig: KNXInterface) => Promise<KNXConnectionResult>;
+  connectKNXInterface: (interfaceConfig: KNXInterfaceConfig) => Promise<KNXConnectionResult>;
   disconnectKNXInterface: () => Promise<KNXConnectionResult>;
   onKNXTelegram: (callback: (telegram: any) => void) => void;
   onKNXConnected: (callback: (data: any) => void) => void;

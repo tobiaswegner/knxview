@@ -163,7 +163,7 @@ ipcMain.handle('knx:discoverInterfaces', async () => {
   }
 });
 
-// IPC handler for connecting to KNX interface in busmonitor mode
+// IPC handler for connecting to KNX interface with configurable busmonitor mode
 ipcMain.handle('knx:connectInterface', async (_event: any, interfaceConfig: any) => {
   try {
     // Disconnect existing tunnel if any
@@ -176,8 +176,10 @@ ipcMain.handle('knx:connectInterface', async (_event: any, interfaceConfig: any)
       activeTunnel = null;
     }
 
-    // Create interface connection in busmonitor mode using discovered interface info
-    const knxInterface = createInterface(interfaceConfig, true); // true for busmonitor mode
+    // Create interface connection using discovered interface info
+    // Use busmonitor mode based on configuration (defaults to true for backward compatibility)
+    const busmonitorMode = interfaceConfig.busmonitorMode !== undefined ? interfaceConfig.busmonitorMode : true;
+    const knxInterface = createInterface(interfaceConfig, busmonitorMode);
 
     // Set up telegram monitoring
     knxInterface.on('recv', (frame: any) => {
@@ -190,8 +192,8 @@ ipcMain.handle('knx:connectInterface', async (_event: any, interfaceConfig: any)
         // Create base telegram
         const baseTelegram = {
           timestamp: new Date().toISOString(),
-          service: 'L_Data.ind',
-          connectionName: `KNX Interface ${interfaceConfig.ip}`,
+          service: busmonitorMode ? 'L_Busmon.ind' : 'L_Data.ind',
+          connectionName: `KNX Interface ${interfaceConfig.ip}${busmonitorMode ? ' (Bus Monitor)' : ''}`,
           frameFormat: 'CommonEmi',
           rawData: rawData,
           id: `live-${Date.now()}-${Math.random()}`,

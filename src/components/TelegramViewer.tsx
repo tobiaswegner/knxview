@@ -6,7 +6,7 @@ import { InterfaceSelector } from './InterfaceSelector';
 import { Toolbar } from './Toolbar';
 import { parseTelegramsXML } from '../utils/xmlParser';
 import { generateCommunicationLogXML, generateTelegramsXML } from '../utils/xmlGenerator';
-import { KNXInterface } from '../types/electron';
+import { KNXInterface, KNXInterfaceConfig } from '../types/electron';
 import '../types/electron';
 import './TelegramViewer.css';
 
@@ -32,6 +32,7 @@ export const TelegramViewer: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [liveTelegrams, setLiveTelegrams] = useState<Telegram[]>([]);
+  const [currentBusmonitorMode, setCurrentBusmonitorMode] = useState<boolean>(true);
 
   // Set up KNX event listeners
   useEffect(() => {
@@ -65,6 +66,7 @@ export const TelegramViewer: React.FC = () => {
       setIsConnected(false);
       setIsConnecting(false);
       setSelectedInterface(null);
+      setCurrentBusmonitorMode(true); // Reset to default
     };
 
     const handleKNXError = (error: any) => {
@@ -264,7 +266,7 @@ export const TelegramViewer: React.FC = () => {
     }
   };
 
-  const handleSelectInterface = async (knxInterface: KNXInterface) => {
+  const handleSelectInterface = async (knxInterface: KNXInterface, busmonitorMode: boolean = true) => {
     if (!window.electronAPI) {
       setInterfaceError('KNX connection not available. This feature requires the Electron environment.');
       return;
@@ -272,12 +274,14 @@ export const TelegramViewer: React.FC = () => {
 
     setIsConnecting(true);
     setInterfaceError(null);
-    
+
     try {
-      const result = await window.electronAPI.connectKNXInterface(knxInterface);
+      const interfaceConfig: KNXInterfaceConfig = {...knxInterface, busmonitorMode};
+      const result = await window.electronAPI.connectKNXInterface(interfaceConfig);
       
       if (result.success) {
         setSelectedInterface(knxInterface);
+        setCurrentBusmonitorMode(busmonitorMode);
         // Clear existing data when connecting to live interface
         setCommunicationLog(null);
         setSelectedTelegram(null);
@@ -302,6 +306,7 @@ export const TelegramViewer: React.FC = () => {
       if (result.success) {
         setIsConnected(false);
         setSelectedInterface(null);
+        setCurrentBusmonitorMode(true); // Reset to default
         setLiveTelegrams([]);
       } else {
         setInterfaceError(result.error || 'Failed to disconnect from KNX interface');
@@ -412,7 +417,7 @@ export const TelegramViewer: React.FC = () => {
             {isConnected && selectedInterface ? (
               <>
                 <span className="connection-name">Live KNX Connection</span>
-                <span className="connection-mode">Busmonitor</span>
+                <span className="connection-mode">{currentBusmonitorMode ? 'Bus Monitor' : 'Group Monitor'}</span>
                 <span className="connection-status connected">● Connected</span>
                 <span className="knx-interface">KNX: {selectedInterface.ip}:{selectedInterface.port}</span>
               </>
