@@ -4,7 +4,7 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc && webpack --mode=production",
-    "build-electron": "tsc main.ts --outDir dist && tsc preload.ts --outDir dist",
+    "build-electron": "tsc main.ts --outDir dist --skipLibCheck && tsc preload.ts --outDir dist --skipLibCheck",
     "build-react": "webpack --mode=production",
     "build-all": "npm run build-electron && npm run build-react",
     "dev": "concurrently \"npm run dev-react\" \"npm run dev-electron\"",
@@ -41,7 +41,7 @@
     "webpack-dev-server": "^5.2.2"
   },
   "dependencies": {
-    "knxnetjs": "^1.11.3",
+    "knxnetjs": "^1.11.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
