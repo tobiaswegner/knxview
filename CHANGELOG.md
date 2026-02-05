@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.3] - 2025-02-05
+
+### Added
+- Configurable busmonitor mode checkbox in interface discovery dialog
+- Dynamic connection mode display showing "Bus Monitor" vs "Group Monitor"
+- TypeScript interface `KNXInterfaceConfig` for busmonitor configuration
+- CSS styling for interface configuration section
+
+### Changed
+- Interface connection logic now respects user's busmonitor mode selection
+- Service name correctly reflects connection mode: L_Busmon.ind vs L_Data.ind
+- Connection name shows "(Bus Monitor)" indicator when busmonitor is enabled
+- Menu bar displays actual connection mode instead of hardcoded "Busmonitor"
+- Updated all dependencies to latest versions and resolved 17 security vulnerabilities
+- Updated knxnetjs dependency to version 1.11.4
+
+### Fixed
+- Build errors caused by TypeScript declaration conflicts between @types/node and electron
+- Hardcoded "Busmonitor" text now dynamically reflects actual connection mode
+
 ## [1.4.2] - 2025-09-27
 
 ### Changed
