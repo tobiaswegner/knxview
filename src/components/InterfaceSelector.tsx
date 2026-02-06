@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { KNXInterface } from '../types/electron';
 import './InterfaceSelector.css';
 import { LoadingIcon, WarningIcon } from './Icons';
@@ -25,6 +25,13 @@ export const InterfaceSelector: React.FC<InterfaceSelectorProps> = ({
   const [selectedInterface, setSelectedInterface] = useState<KNXInterface | null>(null);
   const [busmonitorMode, setBusmonitorMode] = useState<boolean>(true);
 
+  // Auto-discover interfaces when dialog opens
+  useEffect(() => {
+    if (isOpen && interfaces.length === 0 && !isDiscovering) {
+      onDiscover();
+    }
+  }, [isOpen, interfaces.length, isDiscovering, onDiscover]);
+
   if (!isOpen) return null;
 
   const handleSelect = () => {
@@ -43,21 +50,6 @@ export const InterfaceSelector: React.FC<InterfaceSelectorProps> = ({
         </div>
         
         <div className="interface-selector-content">
-          <div className="discovery-section">
-            <button 
-              className="discover-button" 
-              onClick={onDiscover}
-              disabled={isDiscovering}
-            >
-              {isDiscovering ? 'Discovering...' : 'Discover Interfaces'}
-            </button>
-            {isDiscovering && (
-              <div className="spinner">
-                <LoadingIcon size={16} />
-              </div>
-            )}
-          </div>
-
           {error && (
             <div className="error-message">
               <WarningIcon size={16} />
@@ -68,7 +60,14 @@ export const InterfaceSelector: React.FC<InterfaceSelectorProps> = ({
           <div className="interfaces-list">
             {interfaces.length === 0 && !isDiscovering && (
               <div className="no-interfaces">
-                No KNX interfaces found. Click "Discover Interfaces" to search for available interfaces.
+                No KNX interfaces found. Click "Refresh Interfaces" to search again.
+              </div>
+            )}
+
+            {isDiscovering && (
+              <div className="discovering-message">
+                <LoadingIcon size={16} />
+                <span>Discovering interfaces...</span>
               </div>
             )}
             
@@ -103,33 +102,51 @@ export const InterfaceSelector: React.FC<InterfaceSelectorProps> = ({
               </div>
             ))}
           </div>
+        </div>
 
-          <div className="configuration-section">
-            <label className="busmonitor-checkbox">
-              <input
-                type="checkbox"
-                checked={busmonitorMode}
-                onChange={(e) => setBusmonitorMode(e.target.checked)}
-              />
+        <div className="configuration-section">
+          <label className="busmonitor-checkbox">
+            <input
+              type="checkbox"
+              checked={busmonitorMode}
+              onChange={(e) => setBusmonitorMode(e.target.checked)}
+            />
+            <div className="checkbox-content">
               <span className="checkbox-label">Enable Bus Monitor Mode</span>
               <span className="checkbox-description">
                 Monitor all KNX traffic passively (recommended for logging and analysis)
               </span>
-            </label>
-          </div>
+            </div>
+          </label>
         </div>
 
         <div className="interface-selector-footer">
-          <button className="cancel-button" onClick={onClose}>
-            Cancel
-          </button>
-          <button 
-            className="select-button" 
-            onClick={handleSelect}
-            disabled={!selectedInterface}
-          >
-            Select Interface
-          </button>
+          <div className="refresh-section">
+            <button
+              className="refresh-button"
+              onClick={onDiscover}
+              disabled={isDiscovering}
+            >
+              {isDiscovering ? 'Refreshing...' : 'Refresh Interfaces'}
+            </button>
+            {isDiscovering && (
+              <div className="refresh-spinner">
+                <LoadingIcon size={16} />
+              </div>
+            )}
+          </div>
+          <div className="footer-right-buttons">
+            <button className="cancel-button" onClick={onClose}>
+              Cancel
+            </button>
+            <button
+              className="select-button"
+              onClick={handleSelect}
+              disabled={!selectedInterface}
+            >
+              Select Interface
+            </button>
+          </div>
         </div>
       </div>
     </div>

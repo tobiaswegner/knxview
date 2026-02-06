@@ -121,6 +121,15 @@
   font-style: italic;
 }
 
+.discovering-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 20px;
+  color: #666;
+}
+
 .interface-item {
   border: 2px solid #e0e0e0;
   border-radius: 6px;
@@ -187,12 +196,29 @@
   padding: 20px;
   border-top: 1px solid #e0e0e0;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-right-buttons {
+  display: flex;
   gap: 10px;
 }
 
+.refresh-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.refresh-spinner {
+  font-size: 16px;
+  animation: spin 1s linear infinite;
+}
+
 .cancel-button,
-.select-button {
+.select-button,
+.refresh-button {
   padding: 10px 20px;
   border-radius: 4px;
   border: 1px solid;
@@ -228,39 +254,60 @@
   cursor: not-allowed;
 }
 
+.refresh-button {
+  background: #007acc;
+  color: white;
+  border-color: #007acc;
+}
+
+.refresh-button:hover:not(:disabled) {
+  background: #005f99;
+  border-color: #005f99;
+}
+
+.refresh-button:disabled {
+  background: #ccc;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+
 .configuration-section {
-  margin-top: 20px;
-  padding: 15px;
+  padding: 12px 20px;
   background: #f8f9fa;
-  border-radius: 6px;
-  border: 1px solid #e9ecef;
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .busmonitor-checkbox {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: flex-start;
+  gap: 8px;
   cursor: pointer;
   user-select: none;
 }
 
 .busmonitor-checkbox input[type="checkbox"] {
   margin: 0;
-  margin-right: 8px;
+  margin-top: 2px;
   transform: scale(1.1);
   cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkbox-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .checkbox-label {
   font-weight: 500;
   color: #333;
-  display: flex;
-  align-items: center;
+  line-height: 1.3;
 }
 
 .checkbox-description {
   font-size: 0.85rem;
   color: #666;
-  margin-left: 24px;
-  line-height: 1.4;
+  line-height: 1.3;
 }
