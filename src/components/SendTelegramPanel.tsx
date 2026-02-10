@@ -28,6 +28,11 @@ export const SendTelegramPanel: React.FC<SendTelegramPanelProps> = ({
   const handleSend = () => {
     if (!isValidAddress || isSending) return;
 
+    if (dpt === 'READ') {
+      onSend({ groupAddress, dpt, value: 0 });
+      return;
+    }
+
     let value: number | boolean | string;
     switch (dpt) {
       case 'DPT1':
@@ -75,16 +80,17 @@ export const SendTelegramPanel: React.FC<SendTelegramPanelProps> = ({
       </div>
 
       <div className="send-field">
-        <label>DPT</label>
+        <label>Type</label>
         <select value={dpt} onChange={(e) => setDpt(e.target.value)}>
           <option value="DPT1">DPT 1 (Switch)</option>
           <option value="DPT5">DPT 5 (Unsigned %)</option>
           <option value="DPT9">DPT 9 (Float)</option>
           <option value="RAW">Raw (Hex)</option>
+          <option value="READ">Read Request</option>
         </select>
       </div>
 
-      <div className="send-field">
+      {dpt !== 'READ' && <div className="send-field">
         <label>Value</label>
         {dpt === 'DPT1' && (
           <select value={valueDpt1} onChange={(e) => setValueDpt1(e.target.value)}>
@@ -121,7 +127,7 @@ export const SendTelegramPanel: React.FC<SendTelegramPanelProps> = ({
             className={valueRaw && !isValidRawHex ? 'invalid' : ''}
           />
         )}
-      </div>
+      </div>}
 
       <div className="send-field send-action">
         <button
@@ -129,7 +135,7 @@ export const SendTelegramPanel: React.FC<SendTelegramPanelProps> = ({
           disabled={!isValidAddress || isSending || (dpt === 'RAW' && !isValidRawHex)}
           className="send-button"
         >
-          {isSending ? 'Sending...' : 'Send'}
+          {isSending ? 'Sending...' : (dpt === 'READ' ? 'Read' : 'Send')}
         </button>
       </div>
     </div>

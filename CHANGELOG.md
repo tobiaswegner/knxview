@@ -9,9 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Send telegram panel for group monitor mode with toolbar toggle button
-- Support for DPT 1 (Switch), DPT 5 (Unsigned %), DPT 9 (Float), and Raw hex datapoint types
+- Support for DPT 1 (Switch), DPT 5 (Unsigned %), DPT 9 (Float), Raw hex, and Read Request datapoint types
 - Group address autocomplete from addresses seen in traffic
 - APCI GroupValue_Write encoding with correct group address flag in CTRL2
+- GroupValue_Read request support for reading KNX group object values
 - IPC channel and handler for sending KNX telegrams via cEMI L_DATA_REQ
 - UI design system and component specs in `docs/ui/` for all views
 - Medium type parameter in CommonEMI parser for correct frame structure handling

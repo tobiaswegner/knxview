@@ -308,6 +308,9 @@ ipcMain.handle('knx:sendTelegram', async (_event: any, request: any) => {
     //   APDU = [0x00, 0x80, ...data_bytes]
     let data: Buffer;
     switch (dpt) {
+      case 'READ': // GroupValue_Read — APCI 0x0000, no payload
+        data = Buffer.from([0x00, 0x00]);
+        break;
       case 'DPT1': // Switch (boolean) — short APDU, value in APCI byte
         data = Buffer.from([0x00, 0x80 | (value ? 0x01 : 0x00)]);
         break;
