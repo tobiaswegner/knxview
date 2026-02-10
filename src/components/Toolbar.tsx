@@ -1,13 +1,14 @@
 import React from 'react';
 import './Toolbar.css';
-import { 
-  FolderIcon, 
-  SaveIcon, 
-  ConnectIcon, 
-  DisconnectIcon, 
-  RefreshIcon, 
-  TrashIcon, 
-  LoadingIcon 
+import {
+  FolderIcon,
+  SaveIcon,
+  ConnectIcon,
+  DisconnectIcon,
+  RefreshIcon,
+  TrashIcon,
+  LoadingIcon,
+  SendIcon
 } from './Icons';
 
 interface ToolbarProps {
@@ -22,6 +23,9 @@ interface ToolbarProps {
   searchFilter: string;
   onSearchChange: (value: string) => void;
   hasTelegrams: boolean;
+  isBusmonitorMode: boolean;
+  isSendPanelOpen: boolean;
+  onToggleSendPanel: () => void;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
@@ -35,7 +39,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onClear,
   searchFilter,
   onSearchChange,
-  hasTelegrams
+  hasTelegrams,
+  isBusmonitorMode,
+  isSendPanelOpen,
+  onToggleSendPanel
 }) => {
   return (
     <div className="toolbar">
@@ -81,6 +88,15 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <TrashIcon size={16} />
           Clear
         </button>
+        {isConnected && !isBusmonitorMode && (
+          <button
+            onClick={onToggleSendPanel}
+            className={`toolbar-button send${isSendPanelOpen ? ' active' : ''}`}
+          >
+            <SendIcon size={16} />
+            Send
+          </button>
+        )}
       </div>
       
       <div className="toolbar-section">

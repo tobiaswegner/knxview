@@ -31,6 +31,17 @@ export interface KNXConnectionResult {
   error?: string;
 }
 
+export interface KNXSendRequest {
+  groupAddress: string;
+  dpt: string;
+  value: number | boolean | string;
+}
+
+export interface KNXSendResult {
+  success: boolean;
+  error?: string;
+}
+
 export interface ElectronAPI {
   openFile: () => Promise<FileResult>;
   saveFile: (content: string) => Promise<FileResult>;
@@ -41,6 +52,7 @@ export interface ElectronAPI {
   onKNXConnected: (callback: (data: any) => void) => void;
   onKNXDisconnected: (callback: () => void) => void;
   onKNXError: (callback: (error: any) => void) => void;
+  sendKNXTelegram: (request: KNXSendRequest) => Promise<KNXSendResult>;
   removeKNXListeners: () => void;
 }
 

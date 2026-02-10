@@ -38,6 +38,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   disconnectKNXInterface: (): Promise<KNXConnectionResult> => 
     ipcRenderer.invoke('knx:disconnectInterface'),
   
+  sendKNXTelegram: (request: any): Promise<any> =>
+    ipcRenderer.invoke('knx:sendTelegram', request),
+
   // Event listeners for KNX events
   onKNXTelegram: (callback: (telegram: any) => void) => {
     ipcRenderer.on('knx:telegram', (_event: any, telegram: any) => callback(telegram));

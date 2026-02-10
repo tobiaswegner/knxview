@@ -116,6 +116,21 @@
   color: white;
 }
 
+.toolbar-button.send {
+  border-color: #00897b;
+  color: #00897b;
+}
+
+.toolbar-button.send:hover {
+  background-color: #00897b;
+  color: white;
+}
+
+.toolbar-button.send.active {
+  background-color: #00897b;
+  color: white;
+}
+
 .search-container-toolbar {
   display: flex;
   align-items: center;

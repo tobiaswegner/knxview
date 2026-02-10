@@ -6,7 +6,8 @@ import { InterfaceSelector } from './InterfaceSelector';
 import { Toolbar } from './Toolbar';
 import { parseTelegramsXML } from '../utils/xmlParser';
 import { generateCommunicationLogXML, generateTelegramsXML } from '../utils/xmlGenerator';
-import { KNXInterface, KNXInterfaceConfig } from '../types/electron';
+import { SendTelegramPanel } from './SendTelegramPanel';
+import { KNXInterface, KNXInterfaceConfig, KNXSendRequest } from '../types/electron';
 import '../types/electron';
 import './TelegramViewer.css';
 
@@ -33,6 +34,8 @@ export const TelegramViewer: React.FC = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [liveTelegrams, setLiveTelegrams] = useState<Telegram[]>([]);
   const [currentBusmonitorMode, setCurrentBusmonitorMode] = useState<boolean>(true);
+  const [showSendPanel, setShowSendPanel] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   // Set up KNX event listeners
   useEffect(() => {
@@ -116,6 +119,30 @@ export const TelegramViewer: React.FC = () => {
     const allTelegrams = isConnected ? liveTelegrams : (communicationLog?.telegrams || []);
     return allTelegrams.length > 0;
   }, [communicationLog?.telegrams, liveTelegrams, isConnected]);
+
+  const knownGroupAddresses = React.useMemo(() => {
+    const allTelegrams = isConnected ? liveTelegrams : (communicationLog?.telegrams || []);
+    const addresses = new Set<string>();
+    for (const t of allTelegrams) {
+      if (t.destinationAddress) addresses.add(t.destinationAddress);
+    }
+    return Array.from(addresses).sort();
+  }, [communicationLog, liveTelegrams, isConnected]);
+
+  const handleSendTelegram = async (request: KNXSendRequest) => {
+    if (!window.electronAPI) return;
+    setIsSending(true);
+    try {
+      const result = await window.electronAPI.sendKNXTelegram(request);
+      if (!result.success) {
+        setError(result.error || 'Failed to send telegram');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send telegram');
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const handleRefresh = () => {
     if (currentFile) {
@@ -381,6 +408,9 @@ export const TelegramViewer: React.FC = () => {
           searchFilter={searchFilter}
           onSearchChange={setSearchFilter}
           hasTelegrams={hasTelegrams}
+          isBusmonitorMode={currentBusmonitorMode}
+          isSendPanelOpen={showSendPanel}
+          onToggleSendPanel={() => setShowSendPanel(prev => !prev)}
         />
         <div className="telegram-viewer-empty">
           <h2>No Telegram File Loaded</h2>
@@ -443,7 +473,17 @@ export const TelegramViewer: React.FC = () => {
         searchFilter={searchFilter}
         onSearchChange={setSearchFilter}
         hasTelegrams={hasTelegrams}
+        isBusmonitorMode={currentBusmonitorMode}
+        isSendPanelOpen={showSendPanel}
+        onToggleSendPanel={() => setShowSendPanel(prev => !prev)}
       />
+      {showSendPanel && isConnected && !currentBusmonitorMode && (
+        <SendTelegramPanel
+          knownGroupAddresses={knownGroupAddresses}
+          onSend={handleSendTelegram}
+          isSending={isSending}
+        />
+      )}
       <div className="telegram-viewer-content">
         <VirtualizedTelegramList
           telegrams={filteredTelegrams}

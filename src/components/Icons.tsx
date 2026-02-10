@@ -116,6 +116,18 @@ export const NetworkIcon: React.FC<IconProps> = ({ size = 16, className = '' }) 
   </svg>
 );
 
+export const SendIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+  >
+    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+  </svg>
+);
+
 export const WarningIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
   <svg 
     width={size} 

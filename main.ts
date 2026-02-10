@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
-import { discoverInterfaces, createInterface } from 'knxnetjs';
+import { discoverInterfaces, createInterface, CEMIFrame, CEMIMessageCode } from 'knxnetjs';
 
 // Import the parsing function
 import { parseCommonEmi } from './src/utils/commonEmiParser';
@@ -179,6 +179,7 @@ ipcMain.handle('knx:connectInterface', async (_event: any, interfaceConfig: any)
     // Create interface connection using discovered interface info
     // Use busmonitor mode based on configuration (defaults to true for backward compatibility)
     const busmonitorMode = interfaceConfig.busmonitorMode !== undefined ? interfaceConfig.busmonitorMode : true;
+    currentBusmonitorMode = busmonitorMode;
     const knxInterface = createInterface(interfaceConfig, busmonitorMode);
 
     // Set up telegram monitoring
@@ -267,6 +268,95 @@ ipcMain.handle('knx:disconnectInterface', async () => {
     return {
       success: false,
       error: `Failed to disconnect from KNX interface: ${error instanceof Error ? error.message : error}`
+    };
+  }
+});
+
+// Track busmonitor mode for send validation
+let currentBusmonitorMode = true;
+
+// IPC handler for sending KNX telegrams
+ipcMain.handle('knx:sendTelegram', async (_event: any, request: any) => {
+  try {
+    if (!activeTunnel) {
+      return { success: false, error: 'No active KNX connection' };
+    }
+    if (currentBusmonitorMode) {
+      return { success: false, error: 'Cannot send telegrams in busmonitor mode' };
+    }
+
+    const { groupAddress, dpt, value } = request;
+
+    // Parse group address "M/m/S" → 16-bit integer
+    const parts = groupAddress.split('/');
+    if (parts.length !== 3) {
+      return { success: false, error: 'Invalid group address format. Use M/m/S (e.g. 1/2/3)' };
+    }
+    const main = parseInt(parts[0], 10);
+    const middle = parseInt(parts[1], 10);
+    const sub = parseInt(parts[2], 10);
+    if (isNaN(main) || isNaN(middle) || isNaN(sub) ||
+        main < 0 || main > 31 || middle < 0 || middle > 7 || sub < 0 || sub > 255) {
+      return { success: false, error: 'Group address out of range' };
+    }
+    const destAddr = (main << 11) | (middle << 8) | sub;
+
+    // Encode value based on DPT, then wrap with APCI GroupValue_Write (0x0080)
+    // Short data (≤6 bits, e.g. DPT1): value packed into lower 6 bits of APCI byte
+    //   APDU = [0x00, 0x80 | (value & 0x3F)]
+    // Long data (>6 bits, e.g. DPT5, DPT9): data follows after 2-byte APCI header
+    //   APDU = [0x00, 0x80, ...data_bytes]
+    let data: Buffer;
+    switch (dpt) {
+      case 'DPT1': // Switch (boolean) — short APDU, value in APCI byte
+        data = Buffer.from([0x00, 0x80 | (value ? 0x01 : 0x00)]);
+        break;
+      case 'DPT5': // 8-bit unsigned (0-255) — long APDU
+        data = Buffer.from([0x00, 0x80, Math.round(Number(value)) & 0xFF]);
+        break;
+      case 'DPT9': { // 2-byte KNX float — long APDU
+        let mantissa = Math.round(Number(value) * 100);
+        let exponent = 0;
+        const sign = mantissa < 0 ? 1 : 0;
+        if (sign) mantissa = -mantissa;
+        while (mantissa > 2047 && exponent < 15) {
+          mantissa = Math.round(mantissa / 2);
+          exponent++;
+        }
+        if (sign) mantissa = -mantissa;
+        // Encode: MEEEEMMM MMMMMMMM (sign in bit 15, exponent bits 14-11, mantissa bits 10-0)
+        const encoded = ((sign << 15) | (exponent << 11) | (mantissa & 0x07FF)) & 0xFFFF;
+        data = Buffer.from([0x00, 0x80, (encoded >> 8) & 0xFF, encoded & 0xFF]);
+        break;
+      }
+      case 'RAW': { // Raw hex payload — wrapped with APCI GroupValue_Write
+        const hexStr = String(value).replace(/\s/g, '');
+        if (!/^[0-9a-fA-F]*$/.test(hexStr) || hexStr.length === 0 || hexStr.length % 2 !== 0) {
+          return { success: false, error: 'Invalid hex string. Provide even number of hex characters (e.g. 0A1B2C)' };
+        }
+        const rawPayload = Buffer.from(hexStr, 'hex');
+        data = Buffer.concat([Buffer.from([0x00, 0x80]), rawPayload]);
+        break;
+      }
+      default:
+        return { success: false, error: `Unsupported DPT: ${dpt}` };
+    }
+
+    const frame = CEMIFrame.create(CEMIMessageCode.L_DATA_REQ, 0x0000, destAddr, data);
+    // Set group address flag (bit 7) in CTRL2 byte.
+    // CEMIFrame.create() defaults to physical address; for group telegrams
+    // we must set CTRL2 bit 7. CTRL2 is at buffer offset 3
+    // (messageCode[0] + addInfoLen[0]=0 + CTRL1[1] + CTRL2[1]).
+    const buf = frame.rawBuffer;
+    const ctrl2Offset = 2 + buf[1] + 1; // skip messageCode, addInfoLen, additional info bytes, CTRL1
+    buf[ctrl2Offset] = buf[ctrl2Offset] | 0x80;
+    await activeTunnel.send(frame);
+
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to send telegram: ${error instanceof Error ? error.message : error}`
     };
   }
 });
