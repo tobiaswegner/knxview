@@ -200,8 +200,8 @@ ipcMain.handle('knx:connectInterface', async (_event: any, interfaceConfig: any)
           isExtendedFormat: false
         };
         
-        // Parse the telegram using CommonEmi parser
-        const parsedData = parseCommonEmi(rawData);
+        // Parse the telegram using CommonEmi parser (default to Tp medium for KNXnet/IP)
+        const parsedData = parseCommonEmi(rawData, 'Tp', baseTelegram.service);
         
         // Combine base telegram with parsed data
         const telegram = {

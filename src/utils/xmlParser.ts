@@ -43,8 +43,8 @@ export const parseTelegramsXML = async (
         rawData: element.getAttribute('RawData') || '',
       };
       
-      // Parse frame format (CommonEmi, etc.)
-      return parseFrameFormat(baseTelegram);
+      // Parse frame format (CommonEmi, etc.), passing mediumType for correct CTRL2 handling
+      return parseFrameFormat(baseTelegram, recordStart.mediumType);
     });
     
     telegrams.push(...chunkTelegrams);
