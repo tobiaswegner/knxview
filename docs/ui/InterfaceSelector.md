@@ -1,3 +1,8 @@
+---
+implements: src/components/InterfaceSelector.tsx
+status: implemented
+---
+
 # InterfaceSelector Component
 
 ## Overview
