@@ -190,10 +190,17 @@ ipcMain.handle('knx:connectInterface', async (_event: any, interfaceConfig: any)
         // Get raw data from frame
         const rawData = frame.raw ? frame.raw.toString('hex') : (frame.toString ? frame.toString('hex') : JSON.stringify(frame));
         
+        // Determine service from cEMI message code (first byte of raw data)
+        const messageCodeMap: Record<number, string> = {
+          0x11: 'L_Data.req', 0x29: 'L_Data.ind', 0x2E: 'L_Data.con', 0x2B: 'L_Busmon.ind'
+        };
+        const msgCodeByte = rawData.length >= 2 ? parseInt(rawData.substring(0, 2), 16) : 0;
+        const service = messageCodeMap[msgCodeByte] || (busmonitorMode ? 'L_Busmon.ind' : 'L_Data.ind');
+
         // Create base telegram
         const baseTelegram = {
           timestamp: new Date().toISOString(),
-          service: busmonitorMode ? 'L_Busmon.ind' : 'L_Data.ind',
+          service,
           connectionName: `KNX Interface ${interfaceConfig.ip}${busmonitorMode ? ' (Bus Monitor)' : ''}`,
           frameFormat: 'CommonEmi',
           rawData: rawData,
