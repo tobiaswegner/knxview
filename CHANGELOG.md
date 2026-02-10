@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.0] - 2026-02-06
+## [1.6.0] - 2026-02-06
 
 ### Added
 - Send telegram panel for group monitor mode with toolbar toggle button
@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - APCI GroupValue_Write encoding with correct group address flag in CTRL2
 - GroupValue_Read request support for reading KNX group object values
 - IPC channel and handler for sending KNX telegrams via cEMI L_DATA_REQ
+
+## [1.5.0] - 2026-02-06
+
+### Added
 - UI design system and component specs in `docs/ui/` for all views
 - Medium type parameter in CommonEMI parser for correct frame structure handling
 
