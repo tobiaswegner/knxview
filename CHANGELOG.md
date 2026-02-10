@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-02-06
+
+### Added
+- UI design system and component specs in `docs/ui/` for all views
+- Medium type parameter in CommonEMI parser for correct frame structure handling
+
+### Changed
+- Reworked KNX interface selection dialog with improved UX
+- CommonEMI parser now correctly handles CTRL2 byte based on medium type and message code
+  - TP busmonitor (L_Busmon.ind): standard frames pack CTRL2 in the length byte (existing behavior)
+  - All other cases (L_Data.ind/req/con, non-TP media): CTRL2 is always a separate byte with full 8-bit length
+- Refactored CommonEMI parser internals into reusable helpers (address parsing, APCI decoding, TLC/payload extraction)
+
+### Fixed
+- Incorrect parsing of CTRL2 and data length for non-busmonitor cEMI frames
+- CI build failure by upgrading Node.js to 20 for @electron/rebuild compatibility
+
 ## [1.4.3] - 2025-02-05
 
 ### Added
